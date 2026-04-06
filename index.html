@@ -163,10 +163,14 @@ function App(){
   const loadAll=useCallback(async()=>{
     setLoading(true);
     try{const rows=await fetchAll();setAllRows(Array.isArray(rows)?rows:[]);}
-    catch(e){console.error(e);}
-    setLoading(false);
+    catch(e){console.error(e); setAllRows([]);}
+    finally{setLoading(false);}
   },[]);
-  useEffect(()=>{loadAll();},[loadAll]);
+  useEffect(()=>{
+    // Render UI immediately, load data in background
+    const timer=setTimeout(()=>loadAll(),0);
+    return()=>clearTimeout(timer);
+  },[loadAll]);
 
   useEffect(()=>{
     const id=rowId(branch,year,month,day);
@@ -663,23 +667,6 @@ function App(){
             const monthPct=monthlyRevTgt>0?Math.min((mtdRev/monthlyRevTgt)*100,100):null;
             const monthRag=monthlyRevTgt>0?getRag(mtdRev,getDailyTarget(branch,year,month,"revenue_total")*elapsed):"none";
             const rc={green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--cyan)"};
-            if(monthlyRevTgt>0)(
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"16px 20px",marginBottom:16,boxShadow:"var(--shadow)"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                  <div style={{fontSize:12,fontWeight:700,color:"var(--navy)"}}>Monthly Revenue Progress — {branch}</div>
-                  <span className={"rag rag-"+monthRag}>{monthRag==="green"?"🟢":monthRag==="amber"?"🟡":"🔴"} {monthPct!==null?monthPct.toFixed(0)+"%":""}</span>
-                </div>
-                <div style={{display:"flex",gap:20,marginBottom:10}}>
-                  <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2"}}>MTD Actual</div><div style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{fmt(mtdRev,"currency")}</div></div>
-                  <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Monthly Target</div><div style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace",color:"var(--text2)"}}>{fmt(monthlyRevTgt,"currency")}</div></div>
-                  <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Proj EOM</div><div style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace",color:rc[monthRag]}}>{fmt(projRev,"currency")}</div></div>
-                </div>
-                <div style={{height:8,background:"var(--border)",borderRadius:6,overflow:"hidden"}}>
-                  <div style={{height:8,width:(monthPct||0)+"%",background:rc[monthRag],borderRadius:6,transition:"width 0.5s"}}/>
-                </div>
-                <div style={{fontSize:10,color:"var(--text3)",marginTop:6}}>Day {elapsed} of {daysInMonth} · Daily target: {fmt(getDailyTarget(branch,year,month,"revenue_total"),"currency")}</div>
-              </div>
-            );
             const cols=[
               {key:"revenue_total",     label:"Total Rev",    type:"currency"},
               {key:"rev_new_member",    label:"New→Member",   type:"currency"},
@@ -696,7 +683,27 @@ function App(){
               {key:"bd_first_visit",    label:"BD 1st",      type:"number"},
             ];
             const thS={padding:"10px 14px",textAlign:"right",color:"var(--text3)",fontSize:10,fontWeight:600,letterSpacing:"0.08em",borderBottom:"2px solid var(--border)",whiteSpace:"nowrap",background:"var(--surface)"};
+            const rc2={green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--cyan)"};
             return(
+              <div>
+              {monthlyRevTgt>0&&(
+                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"16px 20px",marginBottom:16,boxShadow:"var(--shadow)"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                    <div style={{fontSize:12,fontWeight:700,color:"var(--navy)"}}>Monthly Revenue Progress — {branch}</div>
+                    {monthRag!=="none"&&<span className={"rag rag-"+monthRag}>{monthRag==="green"?"🟢":monthRag==="amber"?"🟡":"🔴"} {monthPct!==null?monthPct.toFixed(0)+"%":""}</span>}
+                  </div>
+                  <div style={{display:"flex",gap:24,marginBottom:12,flexWrap:"wrap"}}>
+                    <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>MTD Actual</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace"}}>{fmt(mtdRev,"currency")}</div></div>
+                    <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Monthly Target</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:"var(--text2)"}}>{fmt(monthlyRevTgt,"currency")}</div></div>
+                    <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Proj EOM</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:rc2[monthRag]}}>{fmt(projRev,"currency")}</div></div>
+                    <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Daily Target</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:"var(--text2)"}}>{fmt(getDailyTarget(branch,year,month,"revenue_total"),"currency")}</div></div>
+                  </div>
+                  <div style={{height:8,background:"var(--border)",borderRadius:6,overflow:"hidden"}}>
+                    <div style={{height:8,width:(monthPct||0)+"%",background:rc2[monthRag],borderRadius:6,transition:"width 0.5s"}}/>
+                  </div>
+                  <div style={{fontSize:10,color:"var(--text3)",marginTop:6}}>Day {elapsed} of {daysInMonth} · {(monthPct||0).toFixed(0)}% of monthly target reached</div>
+                </div>
+              )}
               <div style={{background:"var(--surface)",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)",overflow:"hidden"}}>
                 <div style={{overflowX:"auto"}}>
                   <table style={{borderCollapse:"collapse",width:"100%",fontSize:13}}>
@@ -741,6 +748,7 @@ function App(){
                   </table>
                 </div>
                 <div style={{padding:"10px 16px",fontSize:11,color:"var(--text3)",borderTop:"1px solid var(--border)"}}>Click any row to edit · MTD = month to date through today</div>
+              </div>
               </div>
             );
           })()}
