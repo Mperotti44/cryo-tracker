@@ -392,10 +392,56 @@ function App(){
             <InputField label="BD & Partnership 1st Visit" fieldKey="bd_first_visit"/>
           </div>
 
-          <div style={{display:"flex",alignItems:"center",gap:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24}}>
             <button className="save-btn" onClick={handleSave} disabled={saving}>{saving?"Saving…":"Save Day"}</button>
             <span style={{fontSize:11,color:"var(--text3)"}}>Saves to Google Sheets · shared across all branches</span>
           </div>
+
+          {/* Daily RAG Status */}
+          {(()=>{
+            const dailyRevTarget=getDailyTarget(branch,year,month,"revenue_total");
+            const dailyConductTarget=getDailyTarget(branch,year,month,"total_conductions");
+            if(dailyRevTarget===0&&dailyConductTarget===0) return null;
+            const metrics=[
+              {label:"Revenue",actual:Number(form.revenue_total)||0,target:dailyRevTarget,type:"currency"},
+              {label:"Conductions",actual:totalConductions,target:dailyConductTarget,type:"number"},
+              {label:"Rebookings",actual:Number(form.rebookings)||0,target:getDailyTarget(branch,year,month,"rebookings"),type:"number"},
+              {label:"Phone Calls",actual:Number(form.phone_calls)||0,target:getDailyTarget(branch,year,month,"phone_calls"),type:"number"},
+              {label:"First Visits",actual:Number(form.first_visit)||0,target:getDailyTarget(branch,year,month,"first_visit"),type:"number"},
+            ].filter(m=>m.target>0);
+            const rc={green:"var(--green)",amber:"var(--amber)",red:"var(--red)"};
+            const rb={green:"var(--green-pale)",amber:"var(--amber-pale)",red:"var(--red-pale)"};
+            const rl={green:"On Track",amber:"Close",red:"Behind"};
+            const re={green:"🟢",amber:"🟡",red:"🔴"};
+            return(
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:14,padding:"18px 20px",boxShadow:"var(--shadow)"}}>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--navy)",marginBottom:14,letterSpacing:"0.04em"}}>
+                  TODAY'S PERFORMANCE — {branch} · {MONTHS[month]} {day}
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>
+                  {metrics.map(m=>{
+                    const rag=getRag(m.actual,m.target);
+                    const pct=m.target>0?((m.actual/m.target)*100):0;
+                    return(
+                      <div key={m.label} style={{background:rb[rag],border:"1.5px solid "+rc[rag]+"33",borderRadius:10,padding:"12px 14px",borderLeft:"4px solid "+rc[rag]}}>
+                        <div style={{fontSize:9,fontWeight:700,color:rc[rag],letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>{m.label}</div>
+                        <div style={{fontSize:20,fontWeight:700,color:"var(--text)",fontFamily:"'DM Mono',monospace"}}>{fmt(m.actual,m.type)}</div>
+                        <div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Target: {fmt(m.target,m.type)}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8}}>
+                          <span style={{fontSize:13}}>{re[rag]}</span>
+                          <span style={{fontSize:11,fontWeight:700,color:rc[rag]}}>{rl[rag]}</span>
+                          <span style={{fontSize:10,color:"var(--text3)",marginLeft:"auto"}}>{pct.toFixed(0)}%</span>
+                        </div>
+                        <div style={{height:3,background:"rgba(0,0,0,0.08)",borderRadius:3,marginTop:6,overflow:"hidden"}}>
+                          <div style={{height:3,width:Math.min(pct,100)+"%",background:rc[rag],borderRadius:3}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -611,6 +657,29 @@ function App(){
           </div>
           {(()=>{
             const rows=getMonthRows(branch,year,month);
+            const monthlyRevTgt=getTargetVal(branch,year,month,"revenue_total");
+            const mtdRev=sumField(rows,"revenue_total",elapsed);
+            const projRev=projectEOM(rows,"revenue_total",daysInMonth,elapsed);
+            const monthPct=monthlyRevTgt>0?Math.min((mtdRev/monthlyRevTgt)*100,100):null;
+            const monthRag=monthlyRevTgt>0?getRag(mtdRev,getDailyTarget(branch,year,month,"revenue_total")*elapsed):"none";
+            const rc={green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--cyan)"};
+            if(monthlyRevTgt>0)(
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"16px 20px",marginBottom:16,boxShadow:"var(--shadow)"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"var(--navy)"}}>Monthly Revenue Progress — {branch}</div>
+                  <span className={"rag rag-"+monthRag}>{monthRag==="green"?"🟢":monthRag==="amber"?"🟡":"🔴"} {monthPct!==null?monthPct.toFixed(0)+"%":""}</span>
+                </div>
+                <div style={{display:"flex",gap:20,marginBottom:10}}>
+                  <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2"}}>MTD Actual</div><div style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{fmt(mtdRev,"currency")}</div></div>
+                  <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Monthly Target</div><div style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace",color:"var(--text2)"}}>{fmt(monthlyRevTgt,"currency")}</div></div>
+                  <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Proj EOM</div><div style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace",color:rc[monthRag]}}>{fmt(projRev,"currency")}</div></div>
+                </div>
+                <div style={{height:8,background:"var(--border)",borderRadius:6,overflow:"hidden"}}>
+                  <div style={{height:8,width:(monthPct||0)+"%",background:rc[monthRag],borderRadius:6,transition:"width 0.5s"}}/>
+                </div>
+                <div style={{fontSize:10,color:"var(--text3)",marginTop:6}}>Day {elapsed} of {daysInMonth} · Daily target: {fmt(getDailyTarget(branch,year,month,"revenue_total"),"currency")}</div>
+              </div>
+            );
             const cols=[
               {key:"revenue_total",     label:"Total Rev",    type:"currency"},
               {key:"rev_new_member",    label:"New→Member",   type:"currency"},
@@ -634,6 +703,7 @@ function App(){
                     <thead>
                       <tr>
                         <th style={{...thS,textAlign:"left",position:"sticky",left:0,zIndex:10,borderRight:"1px solid var(--border)"}}>Day</th>
+                        <th style={{...thS,textAlign:"center"}}>RAG</th>
                         {cols.map(c=><th key={c.key} style={thS}>{c.label}</th>)}
                       </tr>
                     </thead>
@@ -641,13 +711,20 @@ function App(){
                       {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>{
                         const row=rows.find(r=>Number(r.day)===d);
                         const isToday=d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+                        const isFuture=d>today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+                        const dailyRevTgt=getDailyTarget(branch,year,month,"revenue_total");
+                        const dayRev=row?Number(row["revenue_total"])||0:0;
+                        const dayRag=(!isFuture&&row&&dailyRevTgt>0)?getRag(dayRev,dailyRevTgt):"none";
+                        const ragEmoji={green:"🟢",amber:"🟡",red:"🔴",none:""};
+                        const ragBorder={green:"#00c89633",amber:"#f59e0b33",red:"#e53e3e33",none:"transparent"};
                         const bg=isToday?"var(--cyan-pale)":row?"var(--surface)":"var(--bg)";
                         const tdS={padding:"9px 14px",textAlign:"right",fontSize:13,color:row?"var(--text2)":"var(--text3)",background:bg,borderBottom:"1px solid var(--border)"};
                         return(
-                          <tr key={d} className="tbl-row" onClick={()=>{setDay(d);setView("input");}}>
+                          <tr key={d} className="tbl-row" style={{borderLeft:dayRag!="none"?"3px solid "+ragBorder[dayRag]:"3px solid transparent"}} onClick={()=>{setDay(d);setView("input");}}>
                             <td style={{...tdS,textAlign:"left",position:"sticky",left:0,fontWeight:isToday?700:500,color:isToday?"var(--cyan-dark)":"var(--text2)",borderRight:"1px solid var(--border)"}}>
                               {d}{isToday?" ●":""}
                             </td>
+                            <td style={{...tdS,textAlign:"center",fontSize:16}}>{ragEmoji[dayRag]||(!isFuture&&!row?"·":"")}</td>
                             {cols.map(c=>(<td key={c.key} style={tdS}>{row?fmt(row[c.key],c.type):"·"}</td>))}
                           </tr>
                         );
