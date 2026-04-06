@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>°CRYO On — Ops Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:        #f4f7f9;
+    --surface:   #ffffff;
+    --surface2:  #eef4f7;
+    --border:    #dce8ed;
+    --border2:   #c8dce5;
+    --cyan:      #00b4d8;
+    --cyan-dark: #0096b7;
+    --cyan-pale: #e0f4fa;
+    --navy:      #0a2540;
+    --navy2:     #1a3a5c;
+    --text:      #0a2540;
+    --text2:     #4a6580;
+    --text3:     #8aa4b8;
+    --green:     #00c896;
+    --red:       #ff4d4d;
+    --amber:     #f5a623;
+    --shadow:    0 1px 4px rgba(0,40,80,0.07), 0 4px 16px rgba(0,40,80,0.05);
+    --shadow-lg: 0 4px 24px rgba(0,40,80,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  input[type=number] { -moz-appearance: textfield; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* NAV */
+  .nav-btn {
+    background: none; border: 1.5px solid var(--border); color: var(--text2);
+    padding: 7px 18px; cursor: pointer; font-family: inherit; font-size: 12px;
+    font-weight: 500; letter-spacing: 0.02em; border-radius: 8px; transition: all 0.18s;
+  }
+  .nav-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .nav-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  /* BRANCH BUTTONS */
+  .br-btn {
+    background: var(--surface); border: 1.5px solid var(--border); color: var(--text2);
+    padding: 6px 14px; cursor: pointer; font-family: inherit; font-size: 12px;
+    font-weight: 600; letter-spacing: 0.04em; border-radius: 8px; transition: all 0.15s;
+  }
+  .br-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .br-btn.active { background: var(--cyan); color: #fff; border-color: var(--cyan); }
+
+  /* INPUTS */
+  .inp {
+    background: var(--surface); border: 1.5px solid var(--border);
+    color: var(--text); padding: 10px 14px; font-family: inherit; font-size: 14px;
+    width: 100%; outline: none; transition: all 0.15s; border-radius: 8px;
+  }
+  .inp:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,180,216,0.12); }
+  .inp::placeholder { color: var(--text3); }
+  .inp:disabled {
+    color: var(--cyan-dark); background: var(--cyan-pale);
+    border-color: rgba(0,180,216,0.3); cursor: default; font-weight: 600;
+  }
+  select {
+    background: var(--surface); border: 1.5px solid var(--border); color: var(--text);
+    padding: 8px 12px; font-family: inherit; font-size: 13px; outline: none;
+    border-radius: 8px; cursor: pointer; transition: border-color 0.15s;
+  }
+  select:focus { border-color: var(--cyan); }
+
+  /* BUTTONS */
+  .save-btn {
+    background: var(--navy); color: #fff; border: none; padding: 12px 36px;
+    cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.04em; border-radius: 10px; transition: all 0.18s;
+    box-shadow: 0 4px 12px rgba(10,37,64,0.25);
+  }
+  .save-btn:hover:not(:disabled) { background: var(--navy2); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(10,37,64,0.3); }
+  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .set-btn {
+    background: var(--cyan); color: #fff; border: none; padding: 9px 20px;
+    cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700;
+    border-radius: 8px; transition: all 0.15s; white-space: nowrap;
+  }
+  .set-btn:hover { background: var(--cyan-dark); }
+
+  /* CARDS */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow);
+  }
+  .card-hl {
+    background: linear-gradient(135deg, #e8f8fd 0%, #f0fbfe 100%);
+    border: 1.5px solid rgba(0,180,216,0.25);
+    border-radius: 12px; padding: 18px 20px;
+    box-shadow: 0 2px 12px rgba(0,180,216,0.08);
+  }
+  .card-navy {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+    border-radius: 12px; padding: 18px 20px; color: #fff;
+    box-shadow: 0 4px 20px rgba(10,37,64,0.2);
+  }
+
+  /* LABELS */
+  .lbl { font-size: 10px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; }
+  .big-num { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.1; font-family: 'DM Mono', monospace; }
+  .sub-txt { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* PROGRESS */
+  .prog-track { height: 4px; background: var(--border); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  .prog-fill { height: 4px; border-radius: 4px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+
+  /* TABLE */
+  .tbl-row { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+  .tbl-row:hover td { background: var(--surface2) !important; }
+
+  /* MISC */
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+  .tag-auto {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; padding: 2px 8px;
+    border-radius: 20px; background: var(--cyan-pale); color: var(--cyan-dark);
+    border: 1px solid rgba(0,180,216,0.25);
+  }
+  .section-header {
+    font-size: 13px; font-weight: 700; color: var(--navy); letter-spacing: 0.01em;
+    margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--cyan-pale);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); flex-shrink: 0; }
+  .treatment-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    padding: 10px 14px; border-radius: 10px; transition: border-color 0.15s;
+  }
+  .treatment-row:hover { border-color: var(--cyan); }
+  .chip {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+    background: var(--surface2); color: var(--text2); border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .stat-mini { text-align: center; }
+  .stat-mini .val { font-size: 15px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; }
+  .stat-mini .key { font-size: 9px; color: var(--text3); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+const SHEETDB_URL = "https://sheetdb.io/api/v1/9oq5rqt0vrj1p";
+const BRANCHES = ["TL","GS","MC","SC"];
+const BRANCH_NAMES = { TL:"Thonglor", GS:"Gaysorn", MC:"Mahanakorn Cube", SC:"Singha Complex" };
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const TREATMENTS = [
+  { key:"cryo_body",       label:"°CRYO Body",          credits:1 },
+  { key:"cryo_local",      label:"°CRYO Localized",     credits:1 },
+  { key:"cryo_glow",       label:"°CRYO Glow Facial",   credits:1 },
+  { key:"freezio",         label:"Freezio",             credits:2 },
+  { key:"leg_compression", label:"Leg Compression",     credits:1 },
+  { key:"beauty_angel",    label:"Beauty Angel Facial", credits:1 },
+  { key:"somadome",        label:"Somadome",            credits:1 },
+  { key:"slim_body",       label:"°CRYO Slim Body",     credits:7 },
+  { key:"slim_facial",     label:"°CRYO Slim Facial",   credits:3 },
+  { key:"red_cupping",     label:"Red Light Cupping",   credits:1 },
+  { key:"cryo_snow_glow", label:"°CRYO Snow Glow",     credits:2 },
+];
+
+const getDaysInMonth = (y,m) => new Date(y,m+1,0).getDate();
+const pad = n => String(n).padStart(2,"0");
+const rowId = (b,y,m,d) => `${b}_${y}_${pad(m+1)}_${pad(d)}`;
+const targetId = (b,y,m) => `TARGET_${b}_${y}_${pad(m+1)}`;
+
+function fmt(val,type) {
+  if (val===null||val===undefined||val===""||isNaN(Number(val))) return "—";
+  const n=Number(val);
+  if (type==="currency") return "฿"+n.toLocaleString("en-US",{maximumFractionDigits:0});
+  if (type==="percent")  return n.toFixed(1)+"%";
+  if (type==="decimal")  return n.toFixed(2);
+  return n.toLocaleString("en-US",{maximumFractionDigits:0});
+}
+
+async function fetchAll() {
+  const res = await fetch(SHEETDB_URL);
+  if (!res.ok) throw new Error("Fetch failed");
+  return res.json();
+}
+
+async function upsertRow(rowData) {
+  const searchRes = await fetch(`${SHEETDB_URL}/search?id=${encodeURIComponent(rowData.id)}`);
+  const existing = await searchRes.json();
+  if (Array.isArray(existing) && existing.length > 0) {
+    const res = await fetch(`${SHEETDB_URL}/id/${encodeURIComponent(rowData.id)}`, {
+      method:"PATCH", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({data:rowData}),
+    });
+    if (!res.ok) throw new Error("Update failed");
+  } else {
+    const res = await fetch(SHEETDB_URL, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({data:rowData}),
+    });
+    if (!res.ok) throw new Error("Insert failed");
+  }
+}
+
+function App() {
+  const today = new Date();
+  const [view, setView]       = useState("input");
+  const [branch, setBranch]   = useState("TL");
+  const [year, setYear]       = useState(today.getFullYear());
+  const [month, setMonth]     = useState(today.getMonth());
+  const [day, setDay]         = useState(today.getDate());
+  const [allRows, setAllRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm]       = useState({});
+  const [saving, setSaving]   = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+  const [dashBranch, setDashBranch] = useState("ALL");
+  const [targetInput, setTargetInput] = useState("");
+  const daysInMonth = getDaysInMonth(year,month);
+  const elapsed = (year===today.getFullYear()&&month===today.getMonth()) ? Math.min(today.getDate(),daysInMonth) : daysInMonth;
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    try { const rows=await fetchAll(); setAllRows(Array.isArray(rows)?rows:[]); }
+    catch(e){ console.error(e); }
+    setLoading(false);
+  },[]);
+
+  useEffect(()=>{ loadAll(); },[loadAll]);
+
+  useEffect(()=>{
+    const id=rowId(branch,year,month,day);
+    const row=allRows.find(r=>r.id===id);
+    if(row){
+      const f={};
+      TREATMENTS.forEach(t=>{ f[t.key]=row[t.key]||""; });
+      ["revenue_total","rev_new_single","rev_new_member","unique_clients","first_visit","new_bookings_msg","bd_first_visit"]
+        .forEach(k=>{ f[k]=row[k]||""; });
+      setForm(f);
+    } else { setForm({}); }
+  },[branch,year,month,day,allRows]);
+
+  const totalSessions = TREATMENTS.reduce((s,t)=>s+(Number(form[t.key])||0),0);
+  const totalCredits  = TREATMENTS.reduce((s,t)=>s+(Number(form[t.key])||0)*t.credits,0);
+  const revNewSingle  = Number(form.rev_new_single)||0;
+  const revNewMember  = Number(form.rev_new_member)||0;
+  const revRenewal    = Math.max(0,(Number(form.revenue_total)||0)-revNewSingle-revNewMember);
+  const avgCredit     = Number(form.unique_clients)>0 ? (totalCredits/Number(form.unique_clients)).toFixed(2) : "—";
+
+  const handleSave = async () => {
+    setSaving(true); setSaveMsg("Saving…");
+    try {
+      const id=rowId(branch,year,month,day);
+      const rowData={
+        id, branch, year:String(year), month:String(month+1), day:String(day),
+        revenue_total:form.revenue_total||0, rev_new_single:form.rev_new_single||0,
+        rev_new_member:form.rev_new_member||0, rev_excl_member:revNewSingle,
+        rev_renewal:revRenewal, total_sessions:totalSessions, total_credits:totalCredits,
+        unique_clients:form.unique_clients||0, avg_credit_client:avgCredit==="—"?0:avgCredit,
+        first_visit:form.first_visit||0, new_bookings_msg:form.new_bookings_msg||0,
+        bd_first_visit:form.bd_first_visit||0,
+        ...Object.fromEntries(TREATMENTS.map(t=>[t.key,form[t.key]||0])),
+      };
+      await upsertRow(rowData);
+      setAllRows(prev=>[...prev.filter(r=>r.id!==id),rowData]);
+      setSaveMsg("✓ Saved");
+    } catch(e){ setSaveMsg("✗ Failed — try again"); console.error(e); }
+    setSaving(false);
+    setTimeout(()=>setSaveMsg(""),4000);
+  };
+
+  const handleTargetSave = async () => {
+    if(!targetInput) return;
+    try {
+      const id=targetId(branch,year,month);
+      const rowData={id,branch,year:String(year),month:String(month+1),day:"TARGET",revenue_total:targetInput};
+      await upsertRow(rowData);
+      setAllRows(prev=>[...prev.filter(r=>r.id!==id),rowData]);
+      setTargetInput(""); setSaveMsg("✓ Target saved");
+    } catch{ setSaveMsg("✗ Error"); }
+    setTimeout(()=>setSaveMsg(""),2000);
+  };
+
+  function getMonthRows(b,y,m){
+    return allRows.filter(r=>r.branch===b&&String(r.year)===String(y)&&String(r.month)===String(m+1)&&r.day!=="TARGET");
+  }
+  function sumField(rows,field,upToDay=null){
+    return rows.filter(r=>upToDay===null||Number(r.day)<=upToDay).reduce((s,r)=>s+(Number(r[field])||0),0);
+  }
+  function getTarget(b,y,m){
+    const row=allRows.find(r=>r.id===targetId(b,y,m));
+    return row?Number(row.revenue_total)||0:0;
+  }
+  function projectEOM(rows,field,daysTotal,el){
+    if(el===0) return 0;
+    return (sumField(rows,field,el)/el)*daysTotal;
+  }
+  const dashBranches=dashBranch==="ALL"?BRANCHES:[dashBranch];
+  function aggregated(field,upToDay=elapsed){ return dashBranches.reduce((s,b)=>s+sumField(getMonthRows(b,year,month),field,upToDay),0); }
+  function projectedAll(field){ return dashBranches.reduce((s,b)=>s+projectEOM(getMonthRows(b,year,month),field,daysInMonth,elapsed),0); }
+
+  const InputField = ({label, fieldKey, auto=false, autoVal=""}) => (
+    <div>
+      <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
+        <div className="lbl" style={{marginBottom:0}}>{label}</div>
+        {auto && <span className="tag-auto">⚡ AUTO</span>}
+      </div>
+      {auto
+        ? <input className="inp" disabled value={autoVal} readOnly />
+        : <input type="number" placeholder="0" className="inp"
+            value={form[fieldKey]||""}
+            onChange={e=>setForm(p=>({...p,[fieldKey]:e.target.value}))} />
+      }
+    </div>
+  );
+
+  const KpiCard = ({label, value, type="number", proj, target, highlight}) => {
+    const pct = target>0 ? Math.min((Number(value)/target)*100,100) : 0;
+    const color = pct>=100?"var(--green)":pct<50?"var(--red)":"var(--cyan)";
+    return (
+      <div className={highlight?"card-hl":"card"}>
+        <div className="lbl">{label}</div>
+        <div className="big-num" style={{color:highlight?"var(--cyan-dark)":"var(--text)"}}>{fmt(value,type)}</div>
+        {proj!==undefined && <div className="sub-txt">Proj EOM: <strong style={{color:"var(--text2)"}}>{fmt(proj,type)}</strong></div>}
+        {target>0 && <>
+          <div className="sub-txt" style={{marginTop:2}}>{fmt(target,"currency")} target · {pct.toFixed(0)}%</div>
+          <div className="prog-track"><div className="prog-fill" style={{width:pct+"%",background:color}}/></div>
+        </>}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {/* ── HEADER ── */}
+      <div style={{background:"var(--surface)",borderBottom:"1px solid var(--border)",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:58,position:"sticky",top:0,zIndex:200,boxShadow:"0 2px 12px rgba(0,40,80,0.06)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:20}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:6}}>
+            <span style={{fontSize:20,fontWeight:800,letterSpacing:"-0.02em",color:"var(--navy)"}}>°CRYO</span>
+            <span style={{fontSize:20,fontWeight:300,color:"var(--cyan)"}}>On</span>
+            <span style={{fontSize:10,color:"var(--text3)",marginLeft:8,letterSpacing:"0.12em",fontWeight:600}}>OPS TRACKER</span>
+          </div>
+          {loading && (
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:"var(--cyan)",animation:"pulse 1s infinite"}} />
+              <span style={{fontSize:11,color:"var(--text3)"}}>Syncing…</span>
+            </div>
+          )}
+        </div>
+        <div style={{display:"flex",gap:6}}>
+          {[["input","Daily Input"],["dashboard","Dashboard"],["monthly","Monthly Log"]].map(([v,l])=>(
+            <button key={v} className={`nav-btn ${view===v?"active":""}`} onClick={()=>setView(v)}>{l}</button>
+          ))}
+        </div>
+        <div style={{fontSize:12,color:"var(--text3)",fontWeight:500}}>
+          {MONTHS[today.getMonth()].slice(0,3)} {today.getDate()}, {today.getFullYear()}
+        </div>
+      </div>
+
+      {/* ══ DAILY INPUT ══ */}
+      {view==="input" && (
+        <div style={{maxWidth:880,margin:"0 auto",padding:"32px 24px"}}>
+
+          {/* Controls bar */}
+          <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:28,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
+            <div>
+              <div className="lbl">Branch</div>
+              <div style={{display:"flex",gap:6}}>
+                {BRANCHES.map(b=><button key={b} className={`br-btn ${branch===b?"active":""}`} onClick={()=>setBranch(b)}>{b}</button>)}
+              </div>
+            </div>
+            <div><div className="lbl">Month</div>
+              <select value={month} onChange={e=>setMonth(Number(e.target.value))}>
+                {MONTHS.map((m,i)=><option key={i} value={i}>{m}</option>)}
+              </select>
+            </div>
+            <div><div className="lbl">Day</div>
+              <select value={day} onChange={e=>setDay(Number(e.target.value))}>
+                {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>(
+                  <option key={d} value={d}>{d}{d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear()?" (today)":""}</option>
+                ))}
+              </select>
+            </div>
+            <div><div className="lbl">Year</div>
+              <select value={year} onChange={e=>setYear(Number(e.target.value))}>
+                {[2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div style={{marginLeft:"auto"}}>
+              {saveMsg && <span style={{fontSize:12,fontWeight:600,color:saveMsg.startsWith("✓")?"var(--green)":saveMsg.startsWith("✗")?"var(--red)":"var(--text3)"}}>{saveMsg}</span>}
+            </div>
+          </div>
+
+          {/* Branch + date title */}
+          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
+            <div style={{background:"var(--navy)",color:"#fff",borderRadius:10,padding:"8px 16px",fontWeight:800,fontSize:18,letterSpacing:"0.04em"}}>{branch}</div>
+            <div>
+              <div style={{fontWeight:700,fontSize:16,color:"var(--navy)"}}>{BRANCH_NAMES[branch]}</div>
+              <div style={{fontSize:12,color:"var(--text3)"}}>{MONTHS[month]} {day}, {year}</div>
+            </div>
+          </div>
+
+          {/* Monthly Target */}
+          <div className="card-hl" style={{marginBottom:28,display:"flex",gap:14,alignItems:"center",flexWrap:"wrap"}}>
+            <div style={{flex:1,minWidth:160}}>
+              <div className="lbl">Monthly Revenue Target — {branch}</div>
+              {getTarget(branch,year,month)>0
+                ? <div style={{fontSize:18,fontWeight:700,color:"var(--cyan-dark)"}}>{fmt(getTarget(branch,year,month),"currency")}</div>
+                : <div style={{fontSize:13,color:"var(--text3)"}}>No target set</div>
+              }
+            </div>
+            <input type="number" placeholder="Set new target (THB)" value={targetInput} onChange={e=>setTargetInput(e.target.value)} className="inp" style={{width:220}} />
+            <button onClick={handleTargetSave} className="set-btn">Set Target</button>
+          </div>
+
+          {/* ── REVENUE ── */}
+          <div className="section-header"><span className="section-dot"/>Revenue</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:12}}>
+            <InputField label="Total Revenue (THB)" fieldKey="revenue_total" />
+            <InputField label="New Client — Single Sessions" fieldKey="rev_new_single" />
+            <InputField label="New Client — Memberships" fieldKey="rev_new_member" />
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28}}>
+            <InputField label="1st Visit Revenue Excl. Membership" auto autoVal={fmt(revNewSingle,"currency")} />
+            <InputField label="Member Renewal Revenue" auto autoVal={fmt(revRenewal,"currency")} />
+          </div>
+
+          <div className="divider" />
+
+          {/* ── TREATMENTS ── */}
+          <div className="section-header"><span className="section-dot"/>Treatments</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+            {TREATMENTS.map(t=>(
+              <div key={t.key} className="treatment-row">
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600,color:"var(--text)",marginBottom:3}}>{t.label}</div>
+                  <span className="chip">{t.credits} credit{t.credits>1?"s":""}</span>
+                </div>
+                <input type="number" placeholder="0" className="inp" style={{width:72,textAlign:"center",padding:"8px"}}
+                  value={form[t.key]||""}
+                  onChange={e=>setForm(p=>({...p,[t.key]:e.target.value}))}
+                />
+              </div>
+            ))}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28}}>
+            <InputField label="Total Sessions" auto autoVal={totalSessions} />
+            <InputField label="Total Credit Conductins" auto autoVal={totalCredits} />
+          </div>
+
+          <div className="divider" />
+
+          {/* ── CLIENTS ── */}
+          <div className="section-header"><span className="section-dot"/>Clients & Acquisition</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+            <InputField label="Unique Clients (visited today)" fieldKey="unique_clients" />
+            <InputField label="First Visit Clients" fieldKey="first_visit" />
+            <InputField label="New Bookings from Messaging" fieldKey="new_bookings_msg" />
+            <InputField label="BD & Partnership 1st Visit" fieldKey="bd_first_visit" />
+          </div>
+          <div style={{maxWidth:280,marginBottom:32}}>
+            <InputField label="Avg Credit Use / Unique Client" auto autoVal={avgCredit} />
+          </div>
+
+          <div style={{display:"flex",alignItems:"center",gap:16}}>
+            <button className="save-btn" onClick={handleSave} disabled={saving}>
+              {saving?"Saving…":"Save Day"}
+            </button>
+            <span style={{fontSize:11,color:"var(--text3)"}}>Saves to Google Sheets · shared across all branches</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ DASHBOARD ══ */}
+      {view==="dashboard" && (
+        <div style={{padding:"32px 24px"}}>
+          {/* Controls */}
+          <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:28,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
+            <div>
+              <div className="lbl">View</div>
+              <div style={{display:"flex",gap:6}}>
+                <button className={`br-btn ${dashBranch==="ALL"?"active":""}`} onClick={()=>setDashBranch("ALL")}>All Branches</button>
+                {BRANCHES.map(b=><button key={b} className={`br-btn ${dashBranch===b?"active":""}`} onClick={()=>setDashBranch(b)}>{b}</button>)}
+              </div>
+            </div>
+            <div><div className="lbl">Month</div>
+              <select value={month} onChange={e=>setMonth(Number(e.target.value))}>
+                {MONTHS.map((m,i)=><option key={i} value={i}>{m}</option>)}
+              </select>
+            </div>
+            <div><div className="lbl">Year</div>
+              <select value={year} onChange={e=>setYear(Number(e.target.value))}>
+                {[2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div style={{marginLeft:"auto",textAlign:"right"}}>
+              <div style={{fontSize:13,fontWeight:700,color:"var(--navy)"}}>{MONTHS[month]} {year}</div>
+              <div style={{fontSize:11,color:"var(--text3)"}}>Day {elapsed} of {daysInMonth}</div>
+            </div>
+          </div>
+
+          {/* Revenue */}
+          <div className="section-header"><span className="section-dot"/>Revenue MTD</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:28}}>
+            {[
+              {field:"revenue_total",  label:"Total Revenue",           showTarget:true},
+              {field:"rev_new_member", label:"New Client → Membership", showTarget:false},
+              {field:"rev_new_single", label:"New Client → Single",     showTarget:false},
+              {field:"rev_renewal",    label:"Member Renewals",         showTarget:false},
+            ].map(({field,label,showTarget})=>{
+              const mtd=aggregated(field), proj=projectedAll(field);
+              const tgt=showTarget?dashBranches.reduce((s,b)=>s+getTarget(b,year,month),0):0;
+              return <KpiCard key={field} label={label} value={mtd} type="currency" proj={proj} target={tgt} highlight={showTarget} />;
+            })}
+          </div>
+
+          {/* Ops */}
+          <div className="section-header"><span className="section-dot"/>Operations MTD</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:28}}>
+            {[
+              {field:"total_sessions",    label:"Total Sessions"},
+              {field:"total_credits",     label:"Total Credit Conductins"},
+              {field:"unique_clients",    label:"Unique Clients"},
+              {field:"avg_credit_client", label:"Avg Credits / Client", type:"decimal"},
+            ].map(({field,label,type})=>(
+              <KpiCard key={field} label={label} value={aggregated(field)} type={type} proj={projectedAll(field)} />
+            ))}
+          </div>
+
+          {/* Acquisition */}
+          <div className="section-header"><span className="section-dot"/>Acquisition & Conversion MTD</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:28}}>
+            {[
+              {field:"first_visit",      label:"First Visit Clients"},
+              {field:"new_bookings_msg", label:"New Bookings (Messaging)"},
+              {field:"bd_first_visit",   label:"BD & Partnership 1st Visit"},
+            ].map(({field,label})=>(
+              <KpiCard key={field} label={label} value={aggregated(field)} proj={projectedAll(field)} />
+            ))}
+            {(()=>{
+              const bk=aggregated("new_bookings_msg"), fv=aggregated("first_visit");
+              const rate=bk>0&&fv>0?(fv/bk)*100:null;
+              return (
+                <div className="card-hl">
+                  <div className="lbl">Booking → 1st Visit Rate</div>
+                  <div className="big-num" style={{color:rate?(rate>50?"var(--green)":rate>25?"var(--navy)":"var(--red)"):"var(--text3)"}}>
+                    {rate!==null?rate.toFixed(1)+"%":"—"}
+                  </div>
+                  <div className="sub-txt">{fv} visits · {bk} bookings</div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Treatment Breakdown */}
+          <div className="section-header"><span className="section-dot"/>Treatment Breakdown MTD</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:8,marginBottom:28}}>
+            {TREATMENTS.map(t=>{
+              const mtd=aggregated(t.key), proj=projectedAll(t.key);
+              return (
+                <div key={t.key} className="card" style={{padding:"12px 14px"}}>
+                  <div className="lbl" style={{fontSize:9}}>{t.label}</div>
+                  <div style={{fontSize:22,fontWeight:700,color:"var(--navy)",fontFamily:"'DM Mono',monospace"}}>{mtd}</div>
+                  <div className="sub-txt">Proj: {Math.round(proj)} · <span style={{color:"var(--cyan)"}}>{t.credits}cr</span></div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Branch Comparison */}
+          {dashBranch==="ALL" && (
+            <>
+              <div className="section-header"><span className="section-dot"/>Branch Comparison</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
+                {BRANCHES.map(b=>{
+                  const rows=getMonthRows(b,year,month);
+                  const rev=sumField(rows,"revenue_total",elapsed);
+                  const proj=projectEOM(rows,"revenue_total",daysInMonth,elapsed);
+                  const tgt=getTarget(b,year,month);
+                  const pct=tgt>0?Math.min((rev/tgt)*100,100):0;
+                  const color=pct>=100?"var(--green)":pct<50?"var(--red)":"var(--cyan)";
+                  const sessions=sumField(rows,"total_sessions",elapsed);
+                  const fv=sumField(rows,"first_visit",elapsed);
+                  const dailyAvg=elapsed>0?rev/elapsed:0;
+                  return (
+                    <div key={b} className="card" style={{borderTop:`3px solid ${pct>=100?"#00c896":pct<50?"#ff4d4d":"#00b4d8"}`}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                        <div style={{background:"var(--navy)",color:"#fff",borderRadius:8,padding:"4px 12px",fontWeight:800,fontSize:14}}>{b}</div>
+                        <span style={{fontSize:10,color:"var(--text3)"}}>{BRANCH_NAMES[b]}</span>
+                      </div>
+                      <div style={{fontSize:20,fontWeight:700,color:"var(--text)",fontFamily:"'DM Mono',monospace",marginBottom:4}}>{fmt(rev,"currency")}</div>
+                      <div className="sub-txt">Proj: {fmt(proj,"currency")}</div>
+                      {tgt>0&&<>
+                        <div className="sub-txt">{fmt(tgt,"currency")} target · <strong style={{color}}>{pct.toFixed(0)}%</strong></div>
+                        <div className="prog-track"><div className="prog-fill" style={{width:pct+"%",background:color}}/></div>
+                      </>}
+                      <div style={{marginTop:14,display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+                        {[["Sessions",sessions],["1st Visits",fv],["Daily Avg",fmt(dailyAvg,"currency")]].map(([l,v])=>(
+                          <div key={l} className="stat-mini">
+                            <div className="val">{v}</div>
+                            <div className="key">{l}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ══ MONTHLY LOG ══ */}
+      {view==="monthly" && (
+        <div style={{padding:"32px 24px"}}>
+          <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:24,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
+            <div>
+              <div className="lbl">Branch</div>
+              <div style={{display:"flex",gap:6}}>
+                {BRANCHES.map(b=><button key={b} className={`br-btn ${branch===b?"active":""}`} onClick={()=>setBranch(b)}>{b}</button>)}
+              </div>
+            </div>
+            <div><div className="lbl">Month</div>
+              <select value={month} onChange={e=>setMonth(Number(e.target.value))}>
+                {MONTHS.map((m,i)=><option key={i} value={i}>{m}</option>)}
+              </select>
+            </div>
+            <div><div className="lbl">Year</div>
+              <select value={year} onChange={e=>setYear(Number(e.target.value))}>
+                {[2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {(()=>{
+            const rows=getMonthRows(branch,year,month);
+            const cols=[
+              {key:"revenue_total",    label:"Total Rev",    type:"currency"},
+              {key:"rev_new_member",   label:"New→Member",   type:"currency"},
+              {key:"rev_new_single",   label:"New→Single",   type:"currency"},
+              {key:"rev_renewal",      label:"Renewal",      type:"currency"},
+              {key:"total_sessions",   label:"Sessions",     type:"number"},
+              {key:"total_credits",    label:"Credits",      type:"number"},
+              {key:"unique_clients",   label:"Unique",       type:"number"},
+              {key:"avg_credit_client",label:"Avg Cr/Cl",    type:"decimal"},
+              {key:"first_visit",      label:"1st Visit",    type:"number"},
+              {key:"new_bookings_msg", label:"Msg Bookings", type:"number"},
+              {key:"bd_first_visit",   label:"BD 1st Visit", type:"number"},
+            ];
+            const thS={padding:"10px 14px",textAlign:"right",color:"var(--text3)",fontSize:10,fontWeight:600,letterSpacing:"0.08em",borderBottom:"2px solid var(--border)",whiteSpace:"nowrap",background:"var(--surface)"};
+            return (
+              <div style={{background:"var(--surface)",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)",overflow:"hidden"}}>
+                <div style={{overflowX:"auto"}}>
+                  <table style={{borderCollapse:"collapse",width:"100%",fontSize:13}}>
+                    <thead>
+                      <tr>
+                        <th style={{...thS,textAlign:"left",position:"sticky",left:0,zIndex:10,borderRight:"1px solid var(--border)"}}>Day</th>
+                        {cols.map(c=><th key={c.key} style={thS}>{c.label}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>{
+                        const row=rows.find(r=>Number(r.day)===d);
+                        const isToday=d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+                        const bg=isToday?"var(--cyan-pale)":row?"var(--surface)":"var(--bg)";
+                        const tdS={padding:"9px 14px",textAlign:"right",fontSize:13,color:row?"var(--text2)":"var(--text3)",background:bg,borderBottom:"1px solid var(--border)"};
+                        return (
+                          <tr key={d} className="tbl-row" onClick={()=>{setDay(d);setView("input");}}>
+                            <td style={{...tdS,textAlign:"left",position:"sticky",left:0,fontWeight:isToday?700:500,color:isToday?"var(--cyan-dark)":"var(--text2)",borderRight:"1px solid var(--border)"}}>
+                              {d}{isToday?" ●":""}
+                            </td>
+                            {cols.map(c=>(
+                              <td key={c.key} style={tdS}>{row?fmt(row[c.key],c.type):"·"}</td>
+                            ))}
+                          </tr>
+                        );
+                      })}
+                      <tr style={{background:"var(--navy)"}}>
+                        <td style={{padding:"12px 14px",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:"0.1em",position:"sticky",left:0,background:"var(--navy)",borderRight:"1px solid rgba(255,255,255,0.1)"}}>MTD</td>
+                        {cols.map(c=><td key={c.key} style={{padding:"12px 14px",textAlign:"right",color:"#fff",fontWeight:700,fontSize:13}}>{fmt(sumField(rows,c.key,elapsed),c.type)}</td>)}
+                      </tr>
+                      <tr style={{background:"var(--cyan-pale)"}}>
+                        <td style={{padding:"12px 14px",color:"var(--cyan-dark)",fontSize:11,fontWeight:700,letterSpacing:"0.1em",position:"sticky",left:0,background:"var(--cyan-pale)",borderRight:"1px solid var(--border)"}}>PROJ EOM</td>
+                        {cols.map(c=><td key={c.key} style={{padding:"12px 14px",textAlign:"right",color:"var(--cyan-dark)",fontWeight:600,fontSize:13}}>{fmt(projectEOM(rows,c.key,daysInMonth,elapsed),c.type)}</td>)}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div style={{padding:"10px 16px",fontSize:11,color:"var(--text3)",borderTop:"1px solid var(--border)"}}>
+                  Click any row to edit · MTD = month to date through today
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
