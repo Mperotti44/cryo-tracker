@@ -142,6 +142,29 @@ async function upsertRow(data){
   }
 }
 
+// ── Standalone components defined OUTSIDE App to prevent re-render focus loss ──
+function InputField({label,fieldKey,formKey,defaultVal,onChange,auto,autoVal}){
+  return(
+    <div>
+      <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
+        <div className="lbl" style={{marginBottom:0}}>{label}</div>
+        {auto&&<span className="tag-auto">⚡ AUTO</span>}
+      </div>
+      {auto
+        ?<input className="inp" disabled value={autoVal!==undefined?autoVal:""} readOnly/>
+        :<input
+            key={formKey+"_"+fieldKey}
+            type="number"
+            placeholder="0"
+            className="inp"
+            defaultValue={defaultVal||""}
+            onChange={e=>onChange(fieldKey,e.target.value)}
+          />
+      }
+    </div>
+  );
+}
+
 function App(){
   const today=new Date();
   const [view,setView]=useState("input");
@@ -281,25 +304,7 @@ function App(){
     );
   }
 
-  const InputField=({label,fieldKey,auto=false,autoVal=""})=>(
-    <div>
-      <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
-        <div className="lbl" style={{marginBottom:0}}>{label}</div>
-        {auto&&<span className="tag-auto">⚡ AUTO</span>}
-      </div>
-      {auto
-        ?<input className="inp" disabled value={autoVal} readOnly/>
-        :<input
-            key={formKey+"_"+fieldKey}
-            type="number"
-            placeholder="0"
-            className="inp"
-            defaultValue={formRef.current[fieldKey]||""}
-            onChange={e=>setField(fieldKey,e.target.value)}
-          />
-      }
-    </div>
-  );
+  // InputField intentionally left minimal — defined outside App below
 
   const controlBar=(
     <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:28,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
@@ -378,13 +383,13 @@ function App(){
 
           <div className="section-header"><span className="section-dot"/>Revenue</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:12}}>
-            <InputField label="Total Revenue (THB)" fieldKey="revenue_total"/>
-            <InputField label="New Client — Single Sessions" fieldKey="rev_new_single"/>
-            <InputField label="New Client — Memberships" fieldKey="rev_new_member"/>
+            <InputField label="Total Revenue (THB)" fieldKey="revenue_total" formKey={formKey} defaultVal={formRef.current["revenue_total"]||""} onChange={setField}/>
+            <InputField label="New Client — Single Sessions" fieldKey="rev_new_single" formKey={formKey} defaultVal={formRef.current["rev_new_single"]||""} onChange={setField}/>
+            <InputField label="New Client — Memberships" fieldKey="rev_new_member" formKey={formKey} defaultVal={formRef.current["rev_new_member"]||""} onChange={setField}/>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28}}>
-            <InputField label="1st Visit Revenue Excl. Membership" auto autoVal={fmt(revNewSingle,"currency")}/>
-            <InputField label="Member Renewal Revenue" auto autoVal={fmt(revRenewal,"currency")}/>
+            <InputField label="1st Visit Revenue Excl. Membership" fieldKey="" formKey={formKey} auto autoVal={fmt(revNewSingle,"currency")} onChange={setField}/>
+            <InputField label="Member Renewal Revenue" fieldKey="" formKey={formKey} auto autoVal={fmt(revRenewal,"currency")} onChange={setField}/>
           </div>
 
           <div className="divider"/>
@@ -406,20 +411,20 @@ function App(){
             ))}
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:28}}>
-            <InputField label="Total Conductions" auto autoVal={totalConductions}/>
-            <InputField label="Credit Conductions" auto autoVal={creditConductions}/>
-            <InputField label="Avg Credit Use / Unique Client" auto autoVal={avgCredit}/>
+            <InputField label="Total Conductions" fieldKey="" formKey={formKey} auto autoVal={totalConductions} onChange={setField}/>
+            <InputField label="Credit Conductions" fieldKey="" formKey={formKey} auto autoVal={creditConductions} onChange={setField}/>
+            <InputField label="Avg Credit Use / Unique Client" fieldKey="" formKey={formKey} auto autoVal={avgCredit} onChange={setField}/>
           </div>
 
           <div className="divider"/>
 
           <div className="section-header"><span className="section-dot"/>Clients & Acquisition</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-            <InputField label="Unique Clients (visited today)" fieldKey="unique_clients"/>
-            <InputField label="First Visit Clients" fieldKey="first_visit"/>
-            <InputField label="Rebookings (clients who rebooked today)" fieldKey="rebookings"/>
-            <InputField label="Phone Calls Made" fieldKey="phone_calls"/>
-            <InputField label="BD & Partnership 1st Visit" fieldKey="bd_first_visit"/>
+            <InputField label="Unique Clients (visited today)" fieldKey="unique_clients" formKey={formKey} defaultVal={formRef.current["unique_clients"]||""} onChange={setField}/>
+            <InputField label="First Visit Clients" fieldKey="first_visit" formKey={formKey} defaultVal={formRef.current["first_visit"]||""} onChange={setField}/>
+            <InputField label="Rebookings (clients who rebooked today)" fieldKey="rebookings" formKey={formKey} defaultVal={formRef.current["rebookings"]||""} onChange={setField}/>
+            <InputField label="Phone Calls Made" fieldKey="phone_calls" formKey={formKey} defaultVal={formRef.current["phone_calls"]||""} onChange={setField}/>
+            <InputField label="BD & Partnership 1st Visit" fieldKey="bd_first_visit" formKey={formKey} defaultVal={formRef.current["bd_first_visit"]||""} onChange={setField}/>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28}}>
             <div>
