@@ -151,22 +151,40 @@ function App(){
   const [day,setDay]=useState(today.getDate());
   const [allRows,setAllRows]=useState([]);
   const [loading,setLoading]=useState(false);
-  const [form,setForm]=useState({});
   const [saving,setSaving]=useState(false);
   const [saveMsg,setSaveMsg]=useState("");
   const [dashBranch,setDashBranch]=useState("ALL");
   const [targetInputs,setTargetInputs]=useState({});
+  // Use ref for form values — no re-render on keypress, focus never lost
+  const formRef=React.useRef({});
+  // Separate state just for auto-calculated display values
+  const [autoCalc,setAutoCalc]=useState({totalConductions:0,creditConductions:0,revNewSingle:0,revRenewal:0,avgCredit:"—",reBookRate:0});
   const daysInMonth=getDaysInMonth(year,month);
   const elapsed=(year===today.getFullYear()&&month===today.getMonth())?Math.min(today.getDate(),daysInMonth):daysInMonth;
+  // formKey forces inputs to re-render (reset defaultValue) when branch/day/month/year changes
+  const formKey=branch+"_"+year+"_"+month+"_"+day;
+
+  const recalc=()=>{
+    const f=formRef.current;
+    const tc=TREATMENTS.reduce((s,t)=>s+(Number(f[t.key])||0),0);
+    const cc=TREATMENTS.reduce((s,t)=>s+(Number(f[t.key])||0)*t.credits,0);
+    const rns=Number(f.rev_new_single)||0;
+    const rnm=Number(f.rev_new_member)||0;
+    const rr=Math.max(0,(Number(f.revenue_total)||0)-rns-rnm);
+    const ac=Number(f.unique_clients)>0?(cc/Number(f.unique_clients)).toFixed(2):"—";
+    const rbr=Number(f.unique_clients)>0?((Number(f.rebookings)||0)/Number(f.unique_clients)*100):0;
+    setAutoCalc({totalConductions:tc,creditConductions:cc,revNewSingle:rns,revRenewal:rr,avgCredit:ac,reBookRate:rbr});
+  };
+
+  const setField=(key,val)=>{formRef.current[key]=val;recalc();};
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
     try{const rows=await fetchAll();setAllRows(Array.isArray(rows)?rows:[]);}
-    catch(e){console.error(e); setAllRows([]);}
+    catch(e){console.error(e);setAllRows([]);}
     finally{setLoading(false);}
   },[]);
   useEffect(()=>{
-    // Render UI immediately, load data in background
     const timer=setTimeout(()=>loadAll(),0);
     return()=>clearTimeout(timer);
   },[loadAll]);
@@ -174,37 +192,32 @@ function App(){
   useEffect(()=>{
     const id=rowId(branch,year,month,day);
     const row=allRows.find(r=>r.id===id);
+    const f={};
     if(row){
-      const f={};
       TREATMENTS.forEach(t=>{f[t.key]=row[t.key]||"";});
       ["revenue_total","rev_new_single","rev_new_member","unique_clients","first_visit",
        "bd_first_visit","phone_calls","rebookings"].forEach(k=>{f[k]=row[k]||"";});
-      setForm(f);
-    }else{setForm({});}
+    }
+    formRef.current=f;
+    recalc();
   },[branch,year,month,day,allRows]);
 
-  const totalConductions=TREATMENTS.reduce((s,t)=>s+(Number(form[t.key])||0),0);
-  const creditConductions=TREATMENTS.reduce((s,t)=>s+(Number(form[t.key])||0)*t.credits,0);
-  const revNewSingle=Number(form.rev_new_single)||0;
-  const revNewMember=Number(form.rev_new_member)||0;
-  const revRenewal=Math.max(0,(Number(form.revenue_total)||0)-revNewSingle-revNewMember);
-  const avgCredit=Number(form.unique_clients)>0?(creditConductions/Number(form.unique_clients)).toFixed(2):"—";
-  const reBookRate=Number(form.unique_clients)>0?((Number(form.rebookings)||0)/Number(form.unique_clients)*100):0;
+  const {totalConductions,creditConductions,revNewSingle,revRenewal,avgCredit,reBookRate}=autoCalc;
 
   const handleSave=async()=>{
     setSaving(true);setSaveMsg("Saving…");
     try{
       const id=rowId(branch,year,month,day);
       const rowData={id,branch,year:String(year),month:String(month+1),day:String(day),
-        revenue_total:form.revenue_total||0,rev_new_single:form.rev_new_single||0,
-        rev_new_member:form.rev_new_member||0,rev_excl_member:revNewSingle,rev_renewal:revRenewal,
+        revenue_total:formRef.current.revenue_total||0,rev_new_single:formRef.current.rev_new_single||0,
+        rev_new_member:formRef.current.rev_new_member||0,rev_excl_member:revNewSingle,rev_renewal:revRenewal,
         total_conductions:totalConductions,credit_conductions:creditConductions,
-        unique_clients:form.unique_clients||0,avg_credit_client:avgCredit==="—"?0:avgCredit,
-        first_visit:form.first_visit||0,
-        bd_first_visit:form.bd_first_visit||0,phone_calls:form.phone_calls||0,
-        rebookings:form.rebookings||0,
+        unique_clients:formRef.current.unique_clients||0,avg_credit_client:avgCredit==="—"?0:avgCredit,
+        first_visit:formRef.current.first_visit||0,
+        bd_first_visit:formRef.current.bd_first_visit||0,phone_calls:formRef.current.phone_calls||0,
+        rebookings:formRef.current.rebookings||0,
         rebook_rate:reBookRate,
-        ...Object.fromEntries(TREATMENTS.map(t=>[t.key,form[t.key]||0])),
+        ...Object.fromEntries(TREATMENTS.map(t=>[t.key,formRef.current[t.key]||0])),
       };
       await upsertRow(rowData);
       setAllRows(prev=>[...prev.filter(r=>r.id!==id),rowData]);
@@ -268,32 +281,25 @@ function App(){
     );
   }
 
-  const InputField=({label,fieldKey,auto=false,autoVal=""})=>{
-    const ref=React.useRef(null);
-    React.useEffect(()=>{
-      if(ref.current&&document.activeElement!==ref.current){
-        ref.current.value=form[fieldKey]||"";
-      }
-    },[form[fieldKey]]);
-    return(
-      <div>
-        <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
-          <div className="lbl" style={{marginBottom:0}}>{label}</div>
-          {auto&&<span className="tag-auto">⚡ AUTO</span>}
-        </div>
-        {auto?<input className="inp" disabled value={autoVal} readOnly/>
-          :<input
-            ref={ref}
+  const InputField=({label,fieldKey,auto=false,autoVal=""})=>(
+    <div>
+      <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
+        <div className="lbl" style={{marginBottom:0}}>{label}</div>
+        {auto&&<span className="tag-auto">⚡ AUTO</span>}
+      </div>
+      {auto
+        ?<input className="inp" disabled value={autoVal} readOnly/>
+        :<input
+            key={formKey+"_"+fieldKey}
             type="number"
             placeholder="0"
             className="inp"
-            defaultValue={form[fieldKey]||""}
-            onBlur={e=>setForm(p=>({...p,[fieldKey]:e.target.value}))}
-            onChange={e=>setForm(p=>({...p,[fieldKey]:e.target.value}))}
-          />}
-      </div>
-    );
-  };
+            defaultValue={formRef.current[fieldKey]||""}
+            onChange={e=>setField(fieldKey,e.target.value)}
+          />
+      }
+    </div>
+  );
 
   const controlBar=(
     <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:28,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
@@ -392,10 +398,9 @@ function App(){
                   <span className="chip">{t.credits} credit{t.credits>1?"s":""}</span>
                 </div>
                 <input type="number" placeholder="0" className="inp" style={{width:72,textAlign:"center",padding:"8px"}}
-                  key={t.key+"_"+branch+"_"+day+"_"+month+"_"+year}
-                  defaultValue={form[t.key]||""}
-                  onBlur={e=>setForm(p=>({...p,[t.key]:e.target.value}))}
-                  onChange={e=>setForm(p=>({...p,[t.key]:e.target.value}))}
+                  key={formKey+"_"+t.key}
+                  defaultValue={formRef.current[t.key]||""}
+                  onChange={e=>setField(t.key,e.target.value)}
                 />
               </div>
             ))}
@@ -423,9 +428,9 @@ function App(){
                 <span className="tag-auto">⚡ AUTO</span>
               </div>
               <div style={{background:"var(--cyan-pale)",border:"1.5px solid rgba(0,180,216,0.3)",borderRadius:8,padding:"10px 14px",fontSize:20,fontWeight:700,color:"var(--cyan-dark)",fontFamily:"DM Mono,monospace"}}>
-                {Number(form.unique_clients)>0?reBookRate.toFixed(1)+"%":"—"}
+                {Number(formRef.current.unique_clients)>0?reBookRate.toFixed(1)+"%":"—"}
               </div>
-              <div style={{fontSize:10,color:"var(--text3)",marginTop:4}}>{form.rebookings||0} rebookings from {form.unique_clients||0} unique clients</div>
+              <div style={{fontSize:10,color:"var(--text3)",marginTop:4}}>{formRef.current.rebookings||0} rebookings from {formRef.current.unique_clients||0} unique clients</div>
             </div>
           </div>
 
@@ -441,12 +446,12 @@ function App(){
             if(dailyRevTarget===0&&dailyConductTarget===0) return null;
             const reBookRateTarget=getTargetVal(branch,year,month,"rebook_rate");
             const metrics=[
-              {label:"Revenue",actual:Number(form.revenue_total)||0,target:dailyRevTarget,type:"currency"},
+              {label:"Revenue",actual:Number(formRef.current.revenue_total)||0,target:dailyRevTarget,type:"currency"},
               {label:"Conductions",actual:totalConductions,target:dailyConductTarget,type:"number"},
               {label:"Credit Conductions",actual:creditConductions,target:getDailyTarget(branch,year,month,"credit_conductions"),type:"number"},
-              {label:"Unique Clients",actual:Number(form.unique_clients)||0,target:getDailyTarget(branch,year,month,"unique_clients"),type:"number"},
-              {label:"Phone Calls",actual:Number(form.phone_calls)||0,target:getDailyTarget(branch,year,month,"phone_calls"),type:"number"},
-              {label:"First Visits",actual:Number(form.first_visit)||0,target:getDailyTarget(branch,year,month,"first_visit"),type:"number"},
+              {label:"Unique Clients",actual:Number(formRef.current.unique_clients)||0,target:getDailyTarget(branch,year,month,"unique_clients"),type:"number"},
+              {label:"Phone Calls",actual:Number(formRef.current.phone_calls)||0,target:getDailyTarget(branch,year,month,"phone_calls"),type:"number"},
+              {label:"First Visits",actual:Number(formRef.current.first_visit)||0,target:getDailyTarget(branch,year,month,"first_visit"),type:"number"},
               {label:"Rebooking Rate",actual:reBookRate,target:reBookRateTarget,type:"percent",noDaily:true},
             ].filter(m=>m.target>0);
             const rc={green:"var(--green)",amber:"var(--amber)",red:"var(--red)"};
@@ -530,8 +535,7 @@ function App(){
                         <div className="tgt-label">{m.label}</div>
                         <input type="number" placeholder="Monthly target" className="tgt-inp"
                           key={b+"_"+m.key+"_"+month+"_"+year}
-                          defaultValue={inputs[m.key]??(current>0?current:"")}
-                          onBlur={e=>setTargetInputs(prev=>({...prev,[b]:{...(prev[b]||{}),[m.key]:e.target.value}}))}
+                          defaultValue={current>0?current:""}
                           onChange={e=>setTargetInputs(prev=>({...prev,[b]:{...(prev[b]||{}),[m.key]:e.target.value}}))}
                         />
                         <div className="tgt-current">
