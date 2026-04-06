@@ -97,14 +97,13 @@ const TREATMENTS=[
   {key:"contrast_therapy",label:"Contrast Therapy",    credits:2},
 ];
 const TARGET_METRICS=[
-  {key:"revenue_total",    label:"Total Revenue",           type:"currency"},
-  {key:"total_conductions",label:"Total Conductions",       type:"number"},
-  {key:"credit_conductions",label:"Credit Conductions",     type:"number"},
-  {key:"unique_clients",   label:"Unique Clients",          type:"number"},
-  {key:"first_visit",      label:"First Visit Clients",     type:"number"},
-  {key:"rebookings",       label:"Rebookings",              type:"number"},
-  {key:"phone_calls",      label:"Phone Calls",             type:"number"},
-  {key:"new_bookings_msg", label:"New Bookings (Messaging)",type:"number"},
+  {key:"revenue_total",    label:"Total Revenue",        type:"currency"},
+  {key:"total_conductions",label:"Total Conductions",    type:"number"},
+  {key:"credit_conductions",label:"Credit Conductions",  type:"number"},
+  {key:"unique_clients",   label:"Unique Clients",       type:"number"},
+  {key:"first_visit",      label:"First Visit Clients",  type:"number"},
+  {key:"rebook_rate",      label:"Rebooking Rate",       type:"percent"},
+  {key:"phone_calls",      label:"Phone Calls",          type:"number"},
 ];
 const AMBER=0.15;
 const getDaysInMonth=(y,m)=>new Date(y,m+1,0).getDate();
@@ -179,7 +178,7 @@ function App(){
       const f={};
       TREATMENTS.forEach(t=>{f[t.key]=row[t.key]||"";});
       ["revenue_total","rev_new_single","rev_new_member","unique_clients","first_visit",
-       "new_bookings_msg","bd_first_visit","phone_calls","rebookings"].forEach(k=>{f[k]=row[k]||"";});
+       "bd_first_visit","phone_calls","rebookings"].forEach(k=>{f[k]=row[k]||"";});
       setForm(f);
     }else{setForm({});}
   },[branch,year,month,day,allRows]);
@@ -190,6 +189,7 @@ function App(){
   const revNewMember=Number(form.rev_new_member)||0;
   const revRenewal=Math.max(0,(Number(form.revenue_total)||0)-revNewSingle-revNewMember);
   const avgCredit=Number(form.unique_clients)>0?(creditConductions/Number(form.unique_clients)).toFixed(2):"—";
+  const reBookRate=Number(form.unique_clients)>0?((Number(form.rebookings)||0)/Number(form.unique_clients)*100):0;
 
   const handleSave=async()=>{
     setSaving(true);setSaveMsg("Saving…");
@@ -200,8 +200,10 @@ function App(){
         rev_new_member:form.rev_new_member||0,rev_excl_member:revNewSingle,rev_renewal:revRenewal,
         total_conductions:totalConductions,credit_conductions:creditConductions,
         unique_clients:form.unique_clients||0,avg_credit_client:avgCredit==="—"?0:avgCredit,
-        first_visit:form.first_visit||0,new_bookings_msg:form.new_bookings_msg||0,
-        bd_first_visit:form.bd_first_visit||0,phone_calls:form.phone_calls||0,rebookings:form.rebookings||0,
+        first_visit:form.first_visit||0,
+        bd_first_visit:form.bd_first_visit||0,phone_calls:form.phone_calls||0,
+        rebookings:form.rebookings||0,
+        rebook_rate:reBookRate,
         ...Object.fromEntries(TREATMENTS.map(t=>[t.key,form[t.key]||0])),
       };
       await upsertRow(rowData);
@@ -387,13 +389,24 @@ function App(){
           <div className="divider"/>
 
           <div className="section-header"><span className="section-dot"/>Clients & Acquisition</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
             <InputField label="Unique Clients (visited today)" fieldKey="unique_clients"/>
             <InputField label="First Visit Clients" fieldKey="first_visit"/>
-            <InputField label="Rebookings (booked next visit today)" fieldKey="rebookings"/>
-            <InputField label="New Bookings from Messaging" fieldKey="new_bookings_msg"/>
+            <InputField label="Rebookings (clients who rebooked today)" fieldKey="rebookings"/>
             <InputField label="Phone Calls Made" fieldKey="phone_calls"/>
             <InputField label="BD & Partnership 1st Visit" fieldKey="bd_first_visit"/>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28}}>
+            <div>
+              <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
+                <div className="lbl" style={{marginBottom:0}}>Rebooking Rate</div>
+                <span className="tag-auto">⚡ AUTO</span>
+              </div>
+              <div style={{background:"var(--cyan-pale)",border:"1.5px solid rgba(0,180,216,0.3)",borderRadius:8,padding:"10px 14px",fontSize:20,fontWeight:700,color:"var(--cyan-dark)",fontFamily:"DM Mono,monospace"}}>
+                {Number(form.unique_clients)>0?reBookRate.toFixed(1)+"%":"—"}
+              </div>
+              <div style={{fontSize:10,color:"var(--text3)",marginTop:4}}>{form.rebookings||0} rebookings from {form.unique_clients||0} unique clients</div>
+            </div>
           </div>
 
           <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24}}>
@@ -406,12 +419,15 @@ function App(){
             const dailyRevTarget=getDailyTarget(branch,year,month,"revenue_total");
             const dailyConductTarget=getDailyTarget(branch,year,month,"total_conductions");
             if(dailyRevTarget===0&&dailyConductTarget===0) return null;
+            const reBookRateTarget=getTargetVal(branch,year,month,"rebook_rate");
             const metrics=[
               {label:"Revenue",actual:Number(form.revenue_total)||0,target:dailyRevTarget,type:"currency"},
               {label:"Conductions",actual:totalConductions,target:dailyConductTarget,type:"number"},
-              {label:"Rebookings",actual:Number(form.rebookings)||0,target:getDailyTarget(branch,year,month,"rebookings"),type:"number"},
+              {label:"Credit Conductions",actual:creditConductions,target:getDailyTarget(branch,year,month,"credit_conductions"),type:"number"},
+              {label:"Unique Clients",actual:Number(form.unique_clients)||0,target:getDailyTarget(branch,year,month,"unique_clients"),type:"number"},
               {label:"Phone Calls",actual:Number(form.phone_calls)||0,target:getDailyTarget(branch,year,month,"phone_calls"),type:"number"},
               {label:"First Visits",actual:Number(form.first_visit)||0,target:getDailyTarget(branch,year,month,"first_visit"),type:"number"},
+              {label:"Rebooking Rate",actual:reBookRate,target:reBookRateTarget,type:"percent",noDaily:true},
             ].filter(m=>m.target>0);
             const rc={green:"var(--green)",amber:"var(--amber)",red:"var(--red)"};
             const rb={green:"var(--green-pale)",amber:"var(--amber-pale)",red:"var(--red-pale)"};
@@ -424,7 +440,7 @@ function App(){
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>
                   {metrics.map(m=>{
-                    const rag=getRag(m.actual,m.target);
+                    const rag=getRag(m.actual,m.noDaily?m.target:m.target);
                     const pct=m.target>0?((m.actual/m.target)*100):0;
                     return(
                       <div key={m.label} style={{background:rb[rag],border:"1.5px solid "+rc[rag]+"33",borderRadius:10,padding:"12px 14px",borderLeft:"4px solid "+rc[rag]}}>
@@ -567,20 +583,26 @@ function App(){
           <div className="section-header"><span className="section-dot"/>Acquisition & Activity MTD</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:28}}>
             <KpiCard label="First Visit Clients" field="first_visit"/>
-            <KpiCard label="Rebookings" field="rebookings"/>
             <KpiCard label="Phone Calls Made" field="phone_calls"/>
-            <KpiCard label="New Bookings (Messaging)" field="new_bookings_msg"/>
             <KpiCard label="BD & Partnership 1st Visit" field="bd_first_visit" showRag={false}/>
             {(()=>{
-              const bk=aggregated("new_bookings_msg"),fv=aggregated("first_visit");
-              const rate=bk>0&&fv>0?(fv/bk)*100:null;
+              const totalRebooks=aggregated("rebookings");
+              const totalUnique=aggregated("unique_clients");
+              const rate=totalUnique>0?(totalRebooks/totalUnique*100):null;
+              const reBookTgt=dashBranches.reduce((s,b)=>s+getTargetVal(b,year,month,"rebook_rate"),0)/dashBranches.length;
+              const reBookRag=rate!==null&&reBookTgt>0?getRag(rate,reBookTgt):"none";
+              const rc2={green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--border2)"};
               return(
-                <div className="card-hl">
-                  <div className="lbl">Booking → 1st Visit Rate</div>
-                  <div className="big-num" style={{color:rate?(rate>50?"var(--green)":rate>25?"var(--navy)":"var(--red)"):"var(--text3)"}}>
+                <div className="card-hl" style={{borderLeft:"4px solid "+(reBookRag!=="none"?rc2[reBookRag]:"var(--border)")}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                    <div className="lbl" style={{marginBottom:0}}>Rebooking Rate MTD</div>
+                    {reBookRag!=="none"&&<span className={"rag rag-"+reBookRag}>{reBookRag==="green"?"🟢":reBookRag==="amber"?"🟡":"🔴"}</span>}
+                  </div>
+                  <div className="big-num" style={{color:rate!==null?(rate>=70?"var(--green)":rate>=55?"var(--amber)":"var(--red)"):"var(--text3)"}}>
                     {rate!==null?rate.toFixed(1)+"%":"—"}
                   </div>
-                  <div className="sub-txt">{fv} visits · {bk} bookings</div>
+                  <div className="sub-txt">{totalRebooks} rebookings · {totalUnique} unique clients</div>
+                  {reBookTgt>0&&<div className="sub-txt">Target: {reBookTgt.toFixed(0)}%</div>}
                 </div>
               );
             })()}
@@ -628,7 +650,8 @@ function App(){
                       {dailyTgt>0&&<div className="sub-txt">Target: {fmt(dailyTgt*daysInMonth,"currency")}/mo</div>}
                       <div className="prog-track"><div className="prog-fill" style={{width:Math.min(pct||0,100)+"%",background:rag!=="none"?rc:"var(--cyan)"}}/></div>
                       <div style={{marginTop:12,display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                        {[["Conductions",conductions],["1st Visits",fv],["Rebookings",reBook],["Calls",calls]].map(([l,v])=>(
+                        const reBookRate2=sumField(rows,"unique_clients",elapsed)>0?(reBook/sumField(rows,"unique_clients",elapsed)*100).toFixed(0)+"%":"—";
+                        ;[["Conductions",conductions],["1st Visits",fv],["Rebook%",reBookRate2],["Calls",calls]].map(([l,v])=>(
                           <div key={l} className="stat-mini"><div className="val">{v}</div><div className="key">{l}</div></div>
                         ))}
                       </div>
@@ -678,8 +701,8 @@ function App(){
               {key:"avg_credit_client", label:"Avg Cr/Cl",   type:"decimal"},
               {key:"first_visit",       label:"1st Visit",   type:"number"},
               {key:"rebookings",        label:"Rebook.",     type:"number"},
+              {key:"rebook_rate",       label:"Rebook %",    type:"percent"},
               {key:"phone_calls",       label:"Calls",       type:"number"},
-              {key:"new_bookings_msg",  label:"Msg Book.",   type:"number"},
               {key:"bd_first_visit",    label:"BD 1st",      type:"number"},
             ];
             const thS={padding:"10px 14px",textAlign:"right",color:"var(--text3)",fontSize:10,fontWeight:600,letterSpacing:"0.08em",borderBottom:"2px solid var(--border)",whiteSpace:"nowrap",background:"var(--surface)"};
