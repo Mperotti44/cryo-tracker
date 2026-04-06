@@ -268,16 +268,32 @@ function App(){
     );
   }
 
-  const InputField=({label,fieldKey,auto=false,autoVal=""})=>(
-    <div>
-      <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
-        <div className="lbl" style={{marginBottom:0}}>{label}</div>
-        {auto&&<span className="tag-auto">⚡ AUTO</span>}
+  const InputField=({label,fieldKey,auto=false,autoVal=""})=>{
+    const ref=React.useRef(null);
+    React.useEffect(()=>{
+      if(ref.current&&document.activeElement!==ref.current){
+        ref.current.value=form[fieldKey]||"";
+      }
+    },[form[fieldKey]]);
+    return(
+      <div>
+        <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
+          <div className="lbl" style={{marginBottom:0}}>{label}</div>
+          {auto&&<span className="tag-auto">⚡ AUTO</span>}
+        </div>
+        {auto?<input className="inp" disabled value={autoVal} readOnly/>
+          :<input
+            ref={ref}
+            type="number"
+            placeholder="0"
+            className="inp"
+            defaultValue={form[fieldKey]||""}
+            onBlur={e=>setForm(p=>({...p,[fieldKey]:e.target.value}))}
+            onChange={e=>setForm(p=>({...p,[fieldKey]:e.target.value}))}
+          />}
       </div>
-      {auto?<input className="inp" disabled value={autoVal} readOnly/>
-        :<input type="number" placeholder="0" className="inp" value={form[fieldKey]||""} onChange={e=>setForm(p=>({...p,[fieldKey]:e.target.value}))}/>}
-    </div>
-  );
+    );
+  };
 
   const controlBar=(
     <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:28,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
@@ -376,7 +392,11 @@ function App(){
                   <span className="chip">{t.credits} credit{t.credits>1?"s":""}</span>
                 </div>
                 <input type="number" placeholder="0" className="inp" style={{width:72,textAlign:"center",padding:"8px"}}
-                  value={form[t.key]||""} onChange={e=>setForm(p=>({...p,[t.key]:e.target.value}))}/>
+                  key={t.key+"_"+branch+"_"+day+"_"+month+"_"+year}
+                  defaultValue={form[t.key]||""}
+                  onBlur={e=>setForm(p=>({...p,[t.key]:e.target.value}))}
+                  onChange={e=>setForm(p=>({...p,[t.key]:e.target.value}))}
+                />
               </div>
             ))}
           </div>
@@ -509,7 +529,9 @@ function App(){
                       <div key={m.key} className="tgt-row">
                         <div className="tgt-label">{m.label}</div>
                         <input type="number" placeholder="Monthly target" className="tgt-inp"
-                          value={inputs[m.key]??(current>0?current:"")}
+                          key={b+"_"+m.key+"_"+month+"_"+year}
+                          defaultValue={inputs[m.key]??(current>0?current:"")}
+                          onBlur={e=>setTargetInputs(prev=>({...prev,[b]:{...(prev[b]||{}),[m.key]:e.target.value}}))}
                           onChange={e=>setTargetInputs(prev=>({...prev,[b]:{...(prev[b]||{}),[m.key]:e.target.value}}))}
                         />
                         <div className="tgt-current">
