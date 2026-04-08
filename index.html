@@ -148,37 +148,14 @@ async function apiGetAll() {
 }
 
 async function apiUpsert(data) {
-  return new Promise((resolve, reject) => {
-    // Use no-cors iframe form submission to bypass CORS on POST
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = SHEETDB;
-    form.target = "_cryo_iframe";
-    form.style.display = "none";
-
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "data";
-    input.value = JSON.stringify(data);
-    form.appendChild(input);
-
-    let iframe = document.getElementById("_cryo_iframe");
-    if (!iframe) {
-      iframe = document.createElement("iframe");
-      iframe.name = "_cryo_iframe";
-      iframe.id = "_cryo_iframe";
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
-    }
-
-    iframe.onload = () => resolve({ok: true});
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-
-    // Resolve after timeout as fallback
-    setTimeout(() => resolve({ok: true}), 3000);
+  const r = await fetch(SHEETDB, {
+    method: "POST",
+    headers: {"Content-Type": "text/plain"},
+    body: JSON.stringify({data}),
+    redirect: "follow",
   });
+  if (!r.ok) throw new Error("Save failed: " + r.status);
+  return r.json();
 }
 
 // Standalone components — defined OUTSIDE App so they never re-create on App re-render
