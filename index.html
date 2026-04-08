@@ -142,16 +142,21 @@ function ragStatus(actual, target) {
 }
 
 async function apiGetAll() {
-  const r = await fetch(SHEETDB + "?method=GET");
-  if (!r.ok) throw new Error("fetch failed");
-  return r.json();
+  const r = await fetch(SHEETDB, {
+    method: "GET",
+    redirect: "follow",
+  });
+  const text = await r.text();
+  try { return JSON.parse(text); } catch(e) { return []; }
 }
 
 async function apiUpsert(data) {
-  const form = new FormData();
-  form.append("method", "POST");
-  form.append("data", JSON.stringify(data));
-  await fetch(SHEETDB, {method:"POST", body:form});
+  await fetch(SHEETDB, {
+    method: "POST",
+    headers: {"Content-Type": "text/plain;charset=utf-8"},
+    body: JSON.stringify({data}),
+    redirect: "follow",
+  });
 }
 
 // Standalone components — defined OUTSIDE App so they never re-create on App re-render
