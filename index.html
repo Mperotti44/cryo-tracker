@@ -1,88 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>°CRYO On — Ops Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg:#f4f7f9; --surface:#ffffff; --surface2:#eef4f7;
-    --border:#dce8ed; --border2:#c8dce5;
-    --cyan:#00b4d8; --cyan-dark:#0096b7; --cyan-pale:#e0f4fa;
-    --navy:#0a2540; --navy2:#1a3a5c;
-    --text:#0a2540; --text2:#4a6580; --text3:#8aa4b8;
-    --green:#00c896; --green-pale:#e6faf5;
-    --red:#e53e3e; --red-pale:#fdecea;
-    --amber:#f59e0b; --amber-pale:#fef3cd;
-    --shadow:0 1px 4px rgba(0,40,80,0.07),0 4px 16px rgba(0,40,80,0.05);
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh;}
-  ::-webkit-scrollbar{width:5px;height:5px;}
-  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-  input[type=number]{-moz-appearance:textfield;}
-  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
-  .nav-btn{background:none;border:1.5px solid var(--border);color:var(--text2);padding:7px 18px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;border-radius:8px;transition:all 0.18s;}
-  .nav-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-  .nav-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
-  .br-btn{background:var(--surface);border:1.5px solid var(--border);color:var(--text2);padding:6px 14px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;border-radius:8px;transition:all 0.15s;}
-  .br-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-  .br-btn.active{background:var(--cyan);color:#fff;border-color:var(--cyan);}
-  .inp{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:10px 14px;font-family:inherit;font-size:14px;width:100%;outline:none;transition:all 0.15s;border-radius:8px;}
-  .inp:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,180,216,0.12);}
-  .inp::placeholder{color:var(--text3);}
-  .inp:disabled{color:var(--cyan-dark);background:var(--cyan-pale);border-color:rgba(0,180,216,0.3);cursor:default;font-weight:600;}
-  select{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;font-family:inherit;font-size:13px;outline:none;border-radius:8px;cursor:pointer;}
-  select:focus{border-color:var(--cyan);}
-  .save-btn{background:var(--navy);color:#fff;border:none;padding:12px 36px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;transition:all 0.18s;box-shadow:0 4px 12px rgba(10,37,64,0.25);}
-  .save-btn:hover:not(:disabled){background:var(--navy2);transform:translateY(-1px);}
-  .save-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-  .set-btn{background:var(--cyan);color:#fff;border:none;padding:9px 20px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border-radius:8px;transition:all 0.15s;white-space:nowrap;}
-  .set-btn:hover{background:var(--cyan-dark);}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);}
-  .card-hl{background:linear-gradient(135deg,#e8f8fd 0%,#f0fbfe 100%);border:1.5px solid rgba(0,180,216,0.25);border-radius:12px;padding:18px 20px;box-shadow:0 2px 12px rgba(0,180,216,0.08);}
-  .lbl{font-size:10px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
-  .big-num{font-size:24px;font-weight:700;color:var(--text);line-height:1.1;font-family:'DM Mono',monospace;}
-  .sub-txt{font-size:11px;color:var(--text3);margin-top:4px;}
-  .prog-track{height:5px;background:var(--border);border-radius:4px;margin-top:10px;overflow:hidden;}
-  .prog-fill{height:5px;border-radius:4px;transition:width 0.5s cubic-bezier(.4,0,.2,1);}
-  .tbl-row{border-bottom:1px solid var(--border);transition:background 0.1s;cursor:pointer;}
-  .tbl-row:hover td{background:var(--surface2) !important;}
-  .divider{height:1px;background:var(--border);margin:24px 0;}
-  .tag-auto{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 8px;border-radius:20px;background:var(--cyan-pale);color:var(--cyan-dark);border:1px solid rgba(0,180,216,0.25);}
-  .section-header{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--cyan-pale);display:flex;align-items:center;gap:8px;}
-  .section-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);flex-shrink:0;}
-  .treatment-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);padding:10px 14px;border-radius:10px;transition:border-color 0.15s;}
-  .treatment-row:hover{border-color:var(--cyan);}
-  .chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);white-space:nowrap;}
-  .stat-mini{text-align:center;}
-  .stat-mini .val{font-size:15px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
-  .stat-mini .key{font-size:9px;color:var(--text3);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;}
-  .rag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.04em;}
-  .rag-green{background:var(--green-pale);color:#00a87a;border:1px solid #b3edd9;}
-  .rag-amber{background:var(--amber-pale);color:#b45309;border:1px solid #fcd97a;}
-  .rag-red{background:var(--red-pale);color:#c0392b;border:1px solid #f5c0be;}
-  .rag-none{background:var(--surface2);color:var(--text3);border:1px solid var(--border);}
-  .tgt-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
-  .tgt-label{font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:160px;}
-  .tgt-inp{background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:7px 12px;font-family:inherit;font-size:13px;width:150px;outline:none;border-radius:7px;}
-  .tgt-inp:focus{border-color:var(--cyan);background:#fff;}
-  .tgt-current{font-size:11px;color:var(--cyan-dark);font-weight:700;min-width:110px;text-align:right;font-family:'DM Mono',monospace;}
+:root{
+  --bg:#f4f7f9;--surface:#fff;--surface2:#eef4f7;
+  --border:#dce8ed;--border2:#c8dce5;
+  --cyan:#00b4d8;--cyan-dark:#0096b7;--cyan-pale:#e0f4fa;
+  --navy:#0a2540;--navy2:#1a3a5c;
+  --text:#0a2540;--text2:#4a6580;--text3:#8aa4b8;
+  --green:#00c896;--green-pale:#e6faf5;
+  --red:#e53e3e;--red-pale:#fdecea;
+  --amber:#f59e0b;--amber-pale:#fef3cd;
+  --shadow:0 1px 4px rgba(0,40,80,.07),0 4px 16px rgba(0,40,80,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+.nav-btn{background:none;border:1.5px solid var(--border);color:var(--text2);padding:7px 18px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;border-radius:8px;transition:all .18s}
+.nav-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.nav-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.br-btn{background:var(--surface);border:1.5px solid var(--border);color:var(--text2);padding:6px 14px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;border-radius:8px;transition:all .15s}
+.br-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.br-btn.active{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+.inp{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:10px 14px;font-family:inherit;font-size:14px;width:100%;outline:none;transition:all .15s;border-radius:8px}
+.inp:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,180,216,.12)}
+.inp::placeholder{color:var(--text3)}
+.inp:disabled{color:var(--cyan-dark);background:var(--cyan-pale);border-color:rgba(0,180,216,.3);cursor:default;font-weight:600}
+select{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;font-family:inherit;font-size:13px;outline:none;border-radius:8px;cursor:pointer}
+select:focus{border-color:var(--cyan)}
+.save-btn{background:var(--navy);color:#fff;border:none;padding:12px 36px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;transition:all .18s;box-shadow:0 4px 12px rgba(10,37,64,.25)}
+.save-btn:hover:not(:disabled){background:var(--navy2);transform:translateY(-1px)}
+.save-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.set-btn{background:var(--cyan);color:#fff;border:none;padding:9px 20px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border-radius:8px;transition:all .15s;white-space:nowrap}
+.set-btn:hover{background:var(--cyan-dark)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+.card-hl{background:linear-gradient(135deg,#e8f8fd,#f0fbfe);border:1.5px solid rgba(0,180,216,.25);border-radius:12px;padding:18px 20px;box-shadow:0 2px 12px rgba(0,180,216,.08)}
+.lbl{font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:6px}
+.big-num{font-size:24px;font-weight:700;color:var(--text);line-height:1.1;font-family:'DM Mono',monospace}
+.sub-txt{font-size:11px;color:var(--text3);margin-top:4px}
+.prog-track{height:5px;background:var(--border);border-radius:4px;margin-top:10px;overflow:hidden}
+.prog-fill{height:5px;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.tbl-row{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+.tbl-row:hover td{background:var(--surface2) !important}
+.divider{height:1px;background:var(--border);margin:24px 0}
+.tag-auto{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:.1em;padding:2px 8px;border-radius:20px;background:var(--cyan-pale);color:var(--cyan-dark);border:1px solid rgba(0,180,216,.25)}
+.section-header{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--cyan-pale);display:flex;align-items:center;gap:8px}
+.section-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);flex-shrink:0}
+.treatment-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);padding:10px 14px;border-radius:10px;transition:border-color .15s}
+.treatment-row:hover{border-color:var(--cyan)}
+.chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);white-space:nowrap}
+.stat-mini{text-align:center}
+.stat-mini .val{font-size:15px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace}
+.stat-mini .key{font-size:9px;color:var(--text3);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.rag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.04em}
+.rag-green{background:var(--green-pale);color:#00a87a;border:1px solid #b3edd9}
+.rag-amber{background:var(--amber-pale);color:#b45309;border:1px solid #fcd97a}
+.rag-red{background:var(--red-pale);color:#c0392b;border:1px solid #f5c0be}
+.rag-none{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+.tgt-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
+.tgt-label{font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:160px}
+.tgt-inp{background:var(--surface2);border:1.5px solid var(--border);color:var(--text);padding:7px 12px;font-family:inherit;font-size:13px;width:150px;outline:none;border-radius:7px}
+.tgt-inp:focus{border-color:var(--cyan);background:#fff}
+.tgt-current{font-size:11px;color:var(--cyan-dark);font-weight:700;min-width:110px;text-align:right;font-family:'DM Mono',monospace}
+.ctrl-bar{display:flex;gap:14px;align-items:flex-end;margin-bottom:28px;flex-wrap:wrap;background:var(--surface);padding:16px 20px;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useEffect,useCallback}=React;
-const SHEETDB_URL="https://sheetdb.io/api/v1/9oq5rqt0vrj1p";
-const BRANCHES=["TL","GS","MC","SC"];
-const BRANCH_NAMES={TL:"Thonglor",GS:"Gaysorn",MC:"Mahanakorn Cube",SC:"Singha Complex"};
-const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
-const TREATMENTS=[
+
+const {useState, useEffect, useCallback, useRef} = React;
+
+const SHEETDB = "https://script.google.com/macros/s/AKfycbzpSpy1CFkkLm02I8JoxVcmDFcF9SXO55-kePTExz3E2M5vmZhloe2V9SgEUdN0PJ7Z/exec";
+const BRANCHES = ["TL","GS","MC","SC"];
+const BNAMES = {TL:"Thonglor",GS:"Gaysorn",MC:"Mahanakorn Cube",SC:"Singha Complex"};
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const AMBER = 0.15;
+
+const TREATMENTS = [
   {key:"cryo_body",       label:"°CRYO Body",          credits:1},
   {key:"cryo_local",      label:"°CRYO Localized",     credits:1},
   {key:"cryo_glow",       label:"°CRYO Glow Facial",   credits:1},
@@ -96,240 +102,269 @@ const TREATMENTS=[
   {key:"cryo_snow_glow",  label:"°CRYO Snow Glow",     credits:2},
   {key:"contrast_therapy",label:"Contrast Therapy",    credits:2},
 ];
-const TARGET_METRICS=[
-  {key:"revenue_total",    label:"Total Revenue",        type:"currency"},
-  {key:"total_conductions",label:"Total Conductions",    type:"number"},
+
+const TARGET_METRICS = [
+  {key:"revenue_total",     label:"Total Revenue",       type:"currency"},
+  {key:"total_conductions", label:"Total Conductions",   type:"number"},
   {key:"credit_conductions",label:"Credit Conductions",  type:"number"},
-  {key:"unique_clients",   label:"Unique Clients",       type:"number"},
-  {key:"first_visit",      label:"First Visit Clients",  type:"number"},
-  {key:"rebook_rate",      label:"Rebooking Rate",       type:"percent"},
-  {key:"phone_calls",      label:"Phone Calls",          type:"number"},
+  {key:"unique_clients",    label:"Unique Clients",      type:"number"},
+  {key:"first_visit",       label:"First Visit Clients", type:"number"},
+  {key:"rebook_rate",       label:"Rebooking Rate (%)",  type:"number"},
+  {key:"phone_calls",       label:"Phone Calls",         type:"number"},
 ];
-const AMBER=0.15;
-const getDaysInMonth=(y,m)=>new Date(y,m+1,0).getDate();
-const pad=n=>String(n).padStart(2,"0");
-const rowId=(b,y,m,d)=>`${b}_${y}_${pad(m+1)}_${pad(d)}`;
-const targetId=(b,y,m)=>`TARGET_${b}_${y}_${pad(m+1)}`;
-function fmt(val,type){
-  if(val===null||val===undefined||val===""||isNaN(Number(val)))return"—";
-  const n=Number(val);
-  if(type==="currency")return"฿"+n.toLocaleString("en-US",{maximumFractionDigits:0});
-  if(type==="percent")return n.toFixed(1)+"%";
-  if(type==="decimal")return n.toFixed(2);
+
+const FORM_FIELDS = [
+  "revenue_total","rev_new_single","rev_new_member",
+  "unique_clients","first_visit","bd_first_visit","phone_calls","rebookings",
+  ...TREATMENTS.map(t => t.key),
+];
+
+const getDIM = (y,m) => new Date(y,m+1,0).getDate();
+const pad = n => String(n).padStart(2,"0");
+const makeId = (b,y,m,d) => b+"_"+y+"_"+pad(m+1)+"_"+pad(d);
+const makeTId = (b,y,m) => "TGT_"+b+"_"+y+"_"+pad(m+1);
+
+function fmt(val, type) {
+  if (val===null||val===undefined||val===""||isNaN(Number(val))) return "—";
+  const n = Number(val);
+  if (type==="currency") return "฿"+n.toLocaleString("en-US",{maximumFractionDigits:0});
+  if (type==="percent")  return n.toFixed(1)+"%";
+  if (type==="decimal")  return n.toFixed(2);
   return n.toLocaleString("en-US",{maximumFractionDigits:0});
 }
-function getRag(actual,expected){
-  if(!expected||expected===0)return"none";
-  const p=actual/expected;
-  if(p>=1)return"green";
-  if(p>=(1-AMBER))return"amber";
-  return"red";
-}
-async function fetchAll(){
-  const r=await fetch(SHEETDB_URL);
-  if(!r.ok)throw new Error("Fetch failed");
-  return r.json();
-}
-async function upsertRow(data){
-  const sr=await fetch(`${SHEETDB_URL}/search?id=${encodeURIComponent(data.id)}`);
-  const ex=await sr.json();
-  if(Array.isArray(ex)&&ex.length>0){
-    const r=await fetch(`${SHEETDB_URL}/id/${encodeURIComponent(data.id)}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({data})});
-    if(!r.ok)throw new Error("Update failed");
-  }else{
-    const r=await fetch(SHEETDB_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data})});
-    if(!r.ok)throw new Error("Insert failed");
-  }
+
+function ragStatus(actual, target) {
+  if (!target||target===0) return "none";
+  const p = actual/target;
+  if (p>=1) return "green";
+  if (p>=1-AMBER) return "amber";
+  return "red";
 }
 
-// ── Standalone components defined OUTSIDE App to prevent re-render focus loss ──
-function InputField({label,fieldKey,formKey,defaultVal,onChange,auto,autoVal}){
-  return(
-    <div>
-      <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
-        <div className="lbl" style={{marginBottom:0}}>{label}</div>
-        {auto&&<span className="tag-auto">⚡ AUTO</span>}
+async function apiGetAll() {
+  const r = await fetch(SHEETDB);
+  if (!r.ok) throw new Error("fetch failed");
+  return r.json();
+}
+
+async function apiUpsert(data) {
+  // Google Apps Script handles upsert in one call
+  await fetch(SHEETDB, {
+    method:"POST",
+    headers:{"Content-Type":"text/plain"},
+    body:JSON.stringify({data})
+  });
+}
+
+// Standalone components — defined OUTSIDE App so they never re-create on App re-render
+function Field({label, fkey, fkStr, defVal, onChange, auto, autoVal}) {
+  if (auto) {
+    return (
+      <div>
+        <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
+          <div className="lbl" style={{marginBottom:0}}>{label}</div>
+          <span className="tag-auto">AUTO</span>
+        </div>
+        <input className="inp" disabled value={autoVal!==undefined?String(autoVal):""} readOnly/>
       </div>
-      {auto
-        ?<input className="inp" disabled value={autoVal!==undefined?autoVal:""} readOnly/>
-        :<input
-            key={formKey+"_"+fieldKey}
-            type="number"
-            placeholder="0"
-            className="inp"
-            defaultValue={defaultVal||""}
-            onChange={e=>onChange(fieldKey,e.target.value)}
-          />
-      }
+    );
+  }
+  return (
+    <div>
+      <div className="lbl">{label}</div>
+      <input key={fkStr+"_"+fkey} type="number" placeholder="0" className="inp"
+        defaultValue={defVal||""} onChange={e => onChange(fkey, e.target.value)}/>
     </div>
   );
 }
 
-function App(){
-  const today=new Date();
-  const [view,setView]=useState("input");
-  const [branch,setBranch]=useState("TL");
-  const [year,setYear]=useState(today.getFullYear());
-  const [month,setMonth]=useState(today.getMonth());
-  const [day,setDay]=useState(today.getDate());
-  const [allRows,setAllRows]=useState([]);
-  const [loading,setLoading]=useState(false);
-  const [saving,setSaving]=useState(false);
-  const [saveMsg,setSaveMsg]=useState("");
-  const [dashBranch,setDashBranch]=useState("ALL");
-  const [targetInputs,setTargetInputs]=useState({});
-  // Use ref for form values — no re-render on keypress, focus never lost
-  const formRef=React.useRef({});
-  // Separate state just for auto-calculated display values
-  const [autoCalc,setAutoCalc]=useState({totalConductions:0,creditConductions:0,revNewSingle:0,revRenewal:0,avgCredit:"—",reBookRate:0});
-  const daysInMonth=getDaysInMonth(year,month);
-  const elapsed=(year===today.getFullYear()&&month===today.getMonth())?Math.min(today.getDate(),daysInMonth):daysInMonth;
-  // formKey forces inputs to re-render (reset defaultValue) when branch/day/month/year changes
-  const formKey=branch+"_"+year+"_"+month+"_"+day;
+function TxInput({t, fkStr, defVal, onChange}) {
+  return (
+    <div className="treatment-row">
+      <div style={{flex:1}}>
+        <div style={{fontSize:13,fontWeight:600,color:"var(--text)",marginBottom:3}}>{t.label}</div>
+        <span className="chip">{t.credits} credit{t.credits>1?"s":""}</span>
+      </div>
+      <input key={fkStr+"_"+t.key} type="number" placeholder="0" className="inp"
+        style={{width:72,textAlign:"center",padding:"8px"}}
+        defaultValue={defVal||""} onChange={e => onChange(t.key, e.target.value)}/>
+    </div>
+  );
+}
 
-  const recalc=()=>{
-    const f=formRef.current;
-    const tc=TREATMENTS.reduce((s,t)=>s+(Number(f[t.key])||0),0);
-    const cc=TREATMENTS.reduce((s,t)=>s+(Number(f[t.key])||0)*t.credits,0);
-    const rns=Number(f.rev_new_single)||0;
-    const rnm=Number(f.rev_new_member)||0;
-    const rr=Math.max(0,(Number(f.revenue_total)||0)-rns-rnm);
-    const ac=Number(f.unique_clients)>0?(cc/Number(f.unique_clients)).toFixed(2):"—";
-    const rbr=Number(f.unique_clients)>0?((Number(f.rebookings)||0)/Number(f.unique_clients)*100):0;
-    setAutoCalc({totalConductions:tc,creditConductions:cc,revNewSingle:rns,revRenewal:rr,avgCredit:ac,reBookRate:rbr});
-  };
+function App() {
+  const today = new Date();
+  const [view,setView]         = useState("input");
+  const [branch,setBranch]     = useState("TL");
+  const [year,setYear]         = useState(today.getFullYear());
+  const [month,setMonth]       = useState(today.getMonth());
+  const [day,setDay]           = useState(today.getDate());
+  const [allRows,setAllRows]   = useState([]);
+  const [loading,setLoading]   = useState(false);
+  const [saving,setSaving]     = useState(false);
+  const [saveMsg,setSaveMsg]   = useState("");
+  const [dashBranch,setDashBranch] = useState("ALL");
+  const [tgtInputs,setTgtInputs]   = useState({});
+  const [calc,setCalc] = useState({tc:0,cc:0,rns:0,rr:0,ac:"—",rbr:0});
+  const vals = useRef({});
+  const dim = getDIM(year,month);
+  const fkStr = branch+"_"+year+"_"+month+"_"+day;
+  const elapsed = (year===today.getFullYear()&&month===today.getMonth())
+    ? Math.min(today.getDate(),dim) : dim;
 
-  const setField=(key,val)=>{formRef.current[key]=val;recalc();};
+  function recalcFrom(f) {
+    const tc  = TREATMENTS.reduce((s,t)=>s+(Number(f[t.key])||0),0);
+    const cc  = TREATMENTS.reduce((s,t)=>s+(Number(f[t.key])||0)*t.credits,0);
+    const rns = Number(f.rev_new_single)||0;
+    const rnm = Number(f.rev_new_member)||0;
+    const rr  = Math.max(0,(Number(f.revenue_total)||0)-rns-rnm);
+    const ac  = Number(f.unique_clients)>0?(cc/Number(f.unique_clients)).toFixed(2):"—";
+    const rbr = Number(f.unique_clients)>0?((Number(f.rebookings)||0)/Number(f.unique_clients)*100):0;
+    setCalc({tc,cc,rns,rr,ac,rbr});
+  }
 
-  const loadAll=useCallback(async()=>{
+  function setVal(key, v) {
+    vals.current[key] = v;
+    recalcFrom(vals.current);
+  }
+
+  const loadAll = useCallback(async()=>{
     setLoading(true);
-    try{const rows=await fetchAll();setAllRows(Array.isArray(rows)?rows:[]);}
-    catch(e){console.error(e);setAllRows([]);}
-    finally{setLoading(false);}
+    try { const rows=await apiGetAll(); setAllRows(Array.isArray(rows)?rows:[]); }
+    catch(e) { console.error(e); setAllRows([]); }
+    setLoading(false);
   },[]);
-  useEffect(()=>{
-    const timer=setTimeout(()=>loadAll(),0);
-    return()=>clearTimeout(timer);
-  },[loadAll]);
+
+  useEffect(()=>{ loadAll(); },[loadAll]);
 
   useEffect(()=>{
-    const id=rowId(branch,year,month,day);
-    const row=allRows.find(r=>r.id===id);
-    const f={};
-    if(row){
-      TREATMENTS.forEach(t=>{f[t.key]=row[t.key]||"";});
-      ["revenue_total","rev_new_single","rev_new_member","unique_clients","first_visit",
-       "bd_first_visit","phone_calls","rebookings"].forEach(k=>{f[k]=row[k]||"";});
-    }
-    formRef.current=f;
-    recalc();
+    const id = makeId(branch,year,month,day);
+    const row = allRows.find(r=>r.id===id);
+    const f = {};
+    if (row) { FORM_FIELDS.forEach(k=>{ f[k]=row[k]||""; }); }
+    vals.current = f;
+    recalcFrom(f);
   },[branch,year,month,day,allRows]);
 
-  const {totalConductions,creditConductions,revNewSingle,revRenewal,avgCredit,reBookRate}=autoCalc;
+  function getTgtRow(b,y,m)    { return allRows.find(r=>r.id===makeTId(b,y,m)); }
+  function getTgtVal(b,y,m,k)  { const r=getTgtRow(b,y,m); return r?Number(r[k])||0:0; }
+  function getDTgt(b,y,m,k)    { const mo=getTgtVal(b,y,m,k); return mo>0?mo/dim:0; }
 
-  const handleSave=async()=>{
-    setSaving(true);setSaveMsg("Saving…");
-    try{
-      const id=rowId(branch,year,month,day);
-      const rowData={id,branch,year:String(year),month:String(month+1),day:String(day),
-        revenue_total:formRef.current.revenue_total||0,rev_new_single:formRef.current.rev_new_single||0,
-        rev_new_member:formRef.current.rev_new_member||0,rev_excl_member:revNewSingle,rev_renewal:revRenewal,
-        total_conductions:totalConductions,credit_conductions:creditConductions,
-        unique_clients:formRef.current.unique_clients||0,avg_credit_client:avgCredit==="—"?0:avgCredit,
-        first_visit:formRef.current.first_visit||0,
-        bd_first_visit:formRef.current.bd_first_visit||0,phone_calls:formRef.current.phone_calls||0,
-        rebookings:formRef.current.rebookings||0,
-        rebook_rate:reBookRate,
-        ...Object.fromEntries(TREATMENTS.map(t=>[t.key,formRef.current[t.key]||0])),
+  function getMonthRows(b,y,m) {
+    return allRows.filter(r=>
+      r.branch===b && String(r.year)===String(y) &&
+      String(r.month)===String(m+1) &&
+      r.day!=="TARGET" && !String(r.id).startsWith("TGT_")
+    );
+  }
+
+  function sumF(rows,field,upTo=null) {
+    return rows.filter(r=>upTo===null||Number(r.day)<=upTo)
+               .reduce((s,r)=>s+(Number(r[field])||0),0);
+  }
+
+  function projEOM(rows,field,dTotal,el) {
+    if (el===0) return 0;
+    return (sumF(rows,field,el)/el)*dTotal;
+  }
+
+  const dashBranches = dashBranch==="ALL"?BRANCHES:[dashBranch];
+
+  function agg(field,upTo=elapsed) {
+    return dashBranches.reduce((s,b)=>s+sumF(getMonthRows(b,year,month),field,upTo),0);
+  }
+  function projAll(field) {
+    return dashBranches.reduce((s,b)=>s+projEOM(getMonthRows(b,year,month),field,dim,elapsed),0);
+  }
+  function aggDTgt(k) {
+    return dashBranches.reduce((s,b)=>s+getDTgt(b,year,month,k),0);
+  }
+
+  async function handleSave() {
+    setSaving(true); setSaveMsg("Saving…");
+    try {
+      const f = vals.current;
+      const {tc,cc,rns,rr,ac,rbr} = calc;
+      const data = {
+        id:makeId(branch,year,month,day), branch,
+        year:String(year), month:String(month+1), day:String(day),
+        revenue_total:f.revenue_total||0, rev_new_single:f.rev_new_single||0,
+        rev_new_member:f.rev_new_member||0, rev_excl_member:rns, rev_renewal:rr,
+        total_conductions:tc, credit_conductions:cc,
+        unique_clients:f.unique_clients||0, avg_credit_client:ac==="—"?0:ac,
+        first_visit:f.first_visit||0, bd_first_visit:f.bd_first_visit||0,
+        phone_calls:f.phone_calls||0, rebookings:f.rebookings||0, rebook_rate:rbr,
+        ...Object.fromEntries(TREATMENTS.map(t=>[t.key,f[t.key]||0])),
       };
-      await upsertRow(rowData);
-      setAllRows(prev=>[...prev.filter(r=>r.id!==id),rowData]);
+      await apiUpsert(data);
+      setAllRows(prev=>[...prev.filter(r=>r.id!==data.id),data]);
       setSaveMsg("✓ Saved");
-    }catch(e){setSaveMsg("✗ Failed — try again");console.error(e);}
-    setSaving(false);setTimeout(()=>setSaveMsg(""),4000);
-  };
+    } catch(e) { setSaveMsg("✗ Failed — try again"); console.error(e); }
+    setSaving(false);
+    setTimeout(()=>setSaveMsg(""),4000);
+  }
 
-  function getTargetRow(b,y,m){return allRows.find(r=>r.id===targetId(b,y,m));}
-  function getTargetVal(b,y,m,k){const row=getTargetRow(b,y,m);return row?Number(row[k])||0:0;}
-  function getDailyTarget(b,y,m,k){const mo=getTargetVal(b,y,m,k);return mo>0?mo/daysInMonth:0;}
-
-  const handleTargetSave=async(b)=>{
-    const inputs=targetInputs[b]||{};
-    if(Object.keys(inputs).length===0)return;
+  async function handleTgtSave(b) {
+    const inputs = tgtInputs[b]||{};
+    if (Object.keys(inputs).length===0) return;
     setSaveMsg("Saving targets…");
-    try{
-      const id=targetId(b,year,month);
-      const existing=getTargetRow(b,year,month)||{};
-      const rowData={...existing,id,branch:b,year:String(year),month:String(month+1),day:"TARGET",
-        ...Object.fromEntries(Object.entries(inputs).map(([k,v])=>[k,v||0]))};
-      await upsertRow(rowData);
-      setAllRows(prev=>[...prev.filter(r=>r.id!==id),rowData]);
-      setTargetInputs(prev=>({...prev,[b]:{}}));
+    try {
+      const id = makeTId(b,year,month);
+      const existing = getTgtRow(b,year,month)||{};
+      const data = {
+        ...existing, id, branch:b,
+        year:String(year), month:String(month+1), day:"TARGET",
+        ...Object.fromEntries(Object.entries(inputs).map(([k,v])=>[k,v||0])),
+      };
+      await apiUpsert(data);
+      setAllRows(prev=>[...prev.filter(r=>r.id!==id),data]);
+      setTgtInputs(prev=>({...prev,[b]:{}}));
       setSaveMsg("✓ Targets saved");
-    }catch{setSaveMsg("✗ Error");}
+    } catch { setSaveMsg("✗ Error"); }
     setTimeout(()=>setSaveMsg(""),2000);
-  };
+  }
 
-  function getMonthRows(b,y,m){return allRows.filter(r=>r.branch===b&&String(r.year)===String(y)&&String(r.month)===String(m+1)&&r.day!=="TARGET");}
-  function sumField(rows,field,upToDay=null){return rows.filter(r=>upToDay===null||Number(r.day)<=upToDay).reduce((s,r)=>s+(Number(r[field])||0),0);}
-  function projectEOM(rows,field,daysTotal,el){if(el===0)return 0;return(sumField(rows,field,el)/el)*daysTotal;}
-  const dashBranches=dashBranch==="ALL"?BRANCHES:[dashBranch];
-  function aggregated(field,upToDay=elapsed){return dashBranches.reduce((s,b)=>s+sumField(getMonthRows(b,year,month),field,upToDay),0);}
-  function projectedAll(field){return dashBranches.reduce((s,b)=>s+projectEOM(getMonthRows(b,year,month),field,daysInMonth,elapsed),0);}
-  function aggregatedDailyTarget(k){return dashBranches.reduce((s,b)=>s+getDailyTarget(b,year,month,k),0);}
-
-  const ragColor={green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--border2)"};
-
-  function KpiCard({label,field,type="number",highlight,showRag=true}){
-    const mtd=aggregated(field),proj=projectedAll(field);
-    const dailyTgt=aggregatedDailyTarget(field);
-    const monthlyTgt=dailyTgt*daysInMonth;
-    const expectedMTD=dailyTgt*elapsed;
-    const rag=showRag?getRag(mtd,expectedMTD):"none";
-    const pct=expectedMTD>0?Math.min((mtd/expectedMTD)*100,999):null;
-    const rc=ragColor[rag];
-    return(
-      <div className={highlight?"card-hl":"card"} style={{borderLeft:`4px solid ${rag!=="none"?rc:"var(--border)"}`}}>
+  function KpiCard({label,field,type="number",highlight,showRag=true}) {
+    const mtd  = agg(field);
+    const proj = projAll(field);
+    const dTgt = aggDTgt(field);
+    const mTgt = dTgt*dim;
+    const exp  = dTgt*elapsed;
+    const r    = showRag ? ragStatus(mtd,exp) : "none";
+    const pct  = exp>0 ? Math.min((mtd/exp)*100,999) : null;
+    const C = {green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--border2)"};
+    return (
+      <div className={highlight?"card-hl":"card"} style={{borderLeft:"4px solid "+(r!=="none"?C[r]:"var(--border)")}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
           <div className="lbl" style={{marginBottom:0}}>{label}</div>
-          {rag!=="none"&&<span className={`rag rag-${rag}`}>{rag==="green"?"🟢":rag==="amber"?"🟡":"🔴"}{pct!==null?" "+pct.toFixed(0)+"%":""}</span>}
+          {r!=="none"&&<span className={"rag rag-"+r}>{r==="green"?"🟢":r==="amber"?"🟡":"🔴"}{pct!==null?" "+pct.toFixed(0)+"%":""}</span>}
         </div>
         <div className="big-num" style={{color:highlight?"var(--cyan-dark)":"var(--text)"}}>{fmt(mtd,type)}</div>
         <div className="sub-txt">Proj EOM: <strong style={{color:"var(--text2)"}}>{fmt(proj,type)}</strong></div>
-        {monthlyTgt>0&&<>
-          <div className="sub-txt">Target: {fmt(monthlyTgt,type)}/mo · {fmt(dailyTgt,type==="currency"?"currency":"decimal")}/day</div>
-          <div className="prog-track"><div className="prog-fill" style={{width:Math.min(pct||0,100)+"%",background:rc}}/></div>
-        </>}
+        {mTgt>0&&(
+          <div>
+            <div className="sub-txt">Target: {fmt(mTgt,type)}/mo · {fmt(dTgt,type==="currency"?"currency":"decimal")}/day</div>
+            <div className="prog-track"><div className="prog-fill" style={{width:Math.min(pct||0,100)+"%",background:C[r]}}/></div>
+          </div>
+        )}
       </div>
     );
   }
 
-  // InputField intentionally left minimal — defined outside App below
+  const RAGC = {green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--border2)"};
 
-  const controlBar=(
-    <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:28,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
-      <div><div className="lbl">Month</div>
-        <select value={month} onChange={e=>setMonth(Number(e.target.value))}>
-          {MONTHS.map((m,i)=><option key={i} value={i}>{m}</option>)}
-        </select>
-      </div>
-      <div><div className="lbl">Year</div>
-        <select value={year} onChange={e=>setYear(Number(e.target.value))}>
-          {[2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
-        </select>
-      </div>
-    </div>
-  );
-
-  return(
+  return (
     <div>
+
       {/* HEADER */}
-      <div style={{background:"var(--surface)",borderBottom:"1px solid var(--border)",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:58,position:"sticky",top:0,zIndex:200,boxShadow:"0 2px 12px rgba(0,40,80,0.06)"}}>
+      <div style={{background:"var(--surface)",borderBottom:"1px solid var(--border)",
+        padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",
+        height:58,position:"sticky",top:0,zIndex:200,boxShadow:"0 2px 12px rgba(0,40,80,.06)"}}>
         <div style={{display:"flex",alignItems:"center",gap:16}}>
           <div>
-            <span style={{fontSize:20,fontWeight:800,letterSpacing:"-0.02em",color:"var(--navy)"}}>°CRYO</span>
+            <span style={{fontSize:20,fontWeight:800,letterSpacing:"-.02em",color:"var(--navy)"}}>°CRYO</span>
             <span style={{fontSize:20,fontWeight:300,color:"var(--cyan)"}}> On</span>
-            <span style={{fontSize:10,color:"var(--text3)",marginLeft:10,letterSpacing:"0.12em",fontWeight:600}}>OPS TRACKER</span>
+            <span style={{fontSize:10,color:"var(--text3)",marginLeft:10,letterSpacing:".12em",fontWeight:600}}>OPS TRACKER</span>
           </div>
           {loading&&<div style={{display:"flex",alignItems:"center",gap:6}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:"var(--cyan)",animation:"pulse 1s infinite"}}/>
@@ -338,7 +373,7 @@ function App(){
         </div>
         <div style={{display:"flex",gap:5}}>
           {[["input","Daily Input"],["dashboard","Dashboard"],["targets","Targets"],["monthly","Monthly Log"]].map(([v,l])=>(
-            <button key={v} className={`nav-btn ${view===v?"active":""}`} onClick={()=>setView(v)}>{l}</button>
+            <button key={v} className={"nav-btn"+(view===v?" active":"")} onClick={()=>setView(v)}>{l}</button>
           ))}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -347,26 +382,32 @@ function App(){
         </div>
       </div>
 
-      {/* ══ DAILY INPUT ══ */}
+      {/* ═══ DAILY INPUT ═══ */}
       {view==="input"&&(
         <div style={{maxWidth:880,margin:"0 auto",padding:"32px 24px"}}>
-          <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:28,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
-            <div><div className="lbl">Branch</div>
-              <div style={{display:"flex",gap:6}}>{BRANCHES.map(b=><button key={b} className={`br-btn ${branch===b?"active":""}`} onClick={()=>setBranch(b)}>{b}</button>)}</div>
+          <div className="ctrl-bar">
+            <div>
+              <div className="lbl">Branch</div>
+              <div style={{display:"flex",gap:6}}>
+                {BRANCHES.map(b=><button key={b} className={"br-btn"+(branch===b?" active":"")} onClick={()=>setBranch(b)}>{b}</button>)}
+              </div>
             </div>
-            <div><div className="lbl">Month</div>
+            <div>
+              <div className="lbl">Month</div>
               <select value={month} onChange={e=>setMonth(Number(e.target.value))}>
                 {MONTHS.map((m,i)=><option key={i} value={i}>{m}</option>)}
               </select>
             </div>
-            <div><div className="lbl">Day</div>
+            <div>
+              <div className="lbl">Day</div>
               <select value={day} onChange={e=>setDay(Number(e.target.value))}>
-                {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>(
+                {Array.from({length:dim},(_,i)=>i+1).map(d=>(
                   <option key={d} value={d}>{d}{d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear()?" (today)":""}</option>
                 ))}
               </select>
             </div>
-            <div><div className="lbl">Year</div>
+            <div>
+              <div className="lbl">Year</div>
               <select value={year} onChange={e=>setYear(Number(e.target.value))}>
                 {[2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
               </select>
@@ -376,66 +417,54 @@ function App(){
           <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
             <div style={{background:"var(--navy)",color:"#fff",borderRadius:10,padding:"8px 16px",fontWeight:800,fontSize:18}}>{branch}</div>
             <div>
-              <div style={{fontWeight:700,fontSize:16,color:"var(--navy)"}}>{BRANCH_NAMES[branch]}</div>
+              <div style={{fontWeight:700,fontSize:16,color:"var(--navy)"}}>{BNAMES[branch]}</div>
               <div style={{fontSize:12,color:"var(--text3)"}}>{MONTHS[month]} {day}, {year}</div>
             </div>
           </div>
 
           <div className="section-header"><span className="section-dot"/>Revenue</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:12}}>
-            <InputField label="Total Revenue (THB)" fieldKey="revenue_total" formKey={formKey} defaultVal={formRef.current["revenue_total"]||""} onChange={setField}/>
-            <InputField label="New Client — Single Sessions" fieldKey="rev_new_single" formKey={formKey} defaultVal={formRef.current["rev_new_single"]||""} onChange={setField}/>
-            <InputField label="New Client — Memberships" fieldKey="rev_new_member" formKey={formKey} defaultVal={formRef.current["rev_new_member"]||""} onChange={setField}/>
+            <Field label="Total Revenue (THB)"          fkey="revenue_total"  fkStr={fkStr} defVal={vals.current.revenue_total}  onChange={setVal}/>
+            <Field label="New Client — Single Sessions" fkey="rev_new_single" fkStr={fkStr} defVal={vals.current.rev_new_single} onChange={setVal}/>
+            <Field label="New Client — Memberships"     fkey="rev_new_member" fkStr={fkStr} defVal={vals.current.rev_new_member} onChange={setVal}/>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28}}>
-            <InputField label="1st Visit Revenue Excl. Membership" fieldKey="" formKey={formKey} auto autoVal={fmt(revNewSingle,"currency")} onChange={setField}/>
-            <InputField label="Member Renewal Revenue" fieldKey="" formKey={formKey} auto autoVal={fmt(revRenewal,"currency")} onChange={setField}/>
+            <Field label="1st Visit Revenue Excl. Membership" auto autoVal={fmt(calc.rns,"currency")} fkey="" fkStr="" defVal="" onChange={()=>{}}/>
+            <Field label="Member Renewal Revenue"              auto autoVal={fmt(calc.rr,"currency")}  fkey="" fkStr="" defVal="" onChange={()=>{}}/>
           </div>
 
           <div className="divider"/>
 
           <div className="section-header"><span className="section-dot"/>Treatments — enter quantity of each</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
-            {TREATMENTS.map(t=>(
-              <div key={t.key} className="treatment-row">
-                <div style={{flex:1}}>
-                  <div style={{fontSize:13,fontWeight:600,color:"var(--text)",marginBottom:3}}>{t.label}</div>
-                  <span className="chip">{t.credits} credit{t.credits>1?"s":""}</span>
-                </div>
-                <input type="number" placeholder="0" className="inp" style={{width:72,textAlign:"center",padding:"8px"}}
-                  key={formKey+"_"+t.key}
-                  defaultValue={formRef.current[t.key]||""}
-                  onChange={e=>setField(t.key,e.target.value)}
-                />
-              </div>
-            ))}
+            {TREATMENTS.map(t=><TxInput key={t.key} t={t} fkStr={fkStr} defVal={vals.current[t.key]} onChange={setVal}/>)}
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:28}}>
-            <InputField label="Total Conductions" fieldKey="" formKey={formKey} auto autoVal={totalConductions} onChange={setField}/>
-            <InputField label="Credit Conductions" fieldKey="" formKey={formKey} auto autoVal={creditConductions} onChange={setField}/>
-            <InputField label="Avg Credit Use / Unique Client" fieldKey="" formKey={formKey} auto autoVal={avgCredit} onChange={setField}/>
+            <Field label="Total Conductions"       auto autoVal={calc.tc} fkey="" fkStr="" defVal="" onChange={()=>{}}/>
+            <Field label="Credit Conductions"      auto autoVal={calc.cc} fkey="" fkStr="" defVal="" onChange={()=>{}}/>
+            <Field label="Avg Credit Use / Client" auto autoVal={calc.ac} fkey="" fkStr="" defVal="" onChange={()=>{}}/>
           </div>
 
           <div className="divider"/>
 
           <div className="section-header"><span className="section-dot"/>Clients & Acquisition</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-            <InputField label="Unique Clients (visited today)" fieldKey="unique_clients" formKey={formKey} defaultVal={formRef.current["unique_clients"]||""} onChange={setField}/>
-            <InputField label="First Visit Clients" fieldKey="first_visit" formKey={formKey} defaultVal={formRef.current["first_visit"]||""} onChange={setField}/>
-            <InputField label="Rebookings (clients who rebooked today)" fieldKey="rebookings" formKey={formKey} defaultVal={formRef.current["rebookings"]||""} onChange={setField}/>
-            <InputField label="Phone Calls Made" fieldKey="phone_calls" formKey={formKey} defaultVal={formRef.current["phone_calls"]||""} onChange={setField}/>
-            <InputField label="BD & Partnership 1st Visit" fieldKey="bd_first_visit" formKey={formKey} defaultVal={formRef.current["bd_first_visit"]||""} onChange={setField}/>
+            <Field label="Unique Clients (visited today)"          fkey="unique_clients" fkStr={fkStr} defVal={vals.current.unique_clients} onChange={setVal}/>
+            <Field label="First Visit Clients"                     fkey="first_visit"    fkStr={fkStr} defVal={vals.current.first_visit}    onChange={setVal}/>
+            <Field label="Rebookings (clients who rebooked today)" fkey="rebookings"     fkStr={fkStr} defVal={vals.current.rebookings}     onChange={setVal}/>
+            <Field label="Phone Calls Made"                        fkey="phone_calls"    fkStr={fkStr} defVal={vals.current.phone_calls}    onChange={setVal}/>
+            <Field label="BD & Partnership 1st Visit"              fkey="bd_first_visit" fkStr={fkStr} defVal={vals.current.bd_first_visit} onChange={setVal}/>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:28}}>
-            <div>
-              <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
-                <div className="lbl" style={{marginBottom:0}}>Rebooking Rate</div>
-                <span className="tag-auto">⚡ AUTO</span>
-              </div>
-              <div style={{background:"var(--cyan-pale)",border:"1.5px solid rgba(0,180,216,0.3)",borderRadius:8,padding:"10px 14px",fontSize:20,fontWeight:700,color:"var(--cyan-dark)",fontFamily:"DM Mono,monospace"}}>
-                {Number(formRef.current.unique_clients)>0?reBookRate.toFixed(1)+"%":"—"}
-              </div>
-              <div style={{fontSize:10,color:"var(--text3)",marginTop:4}}>{formRef.current.rebookings||0} rebookings from {formRef.current.unique_clients||0} unique clients</div>
+          <div style={{maxWidth:300,marginBottom:28}}>
+            <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
+              <div className="lbl" style={{marginBottom:0}}>Rebooking Rate</div>
+              <span className="tag-auto">AUTO</span>
+            </div>
+            <div style={{background:"var(--cyan-pale)",border:"1.5px solid rgba(0,180,216,.3)",borderRadius:8,padding:"10px 14px",fontSize:20,fontWeight:700,color:"var(--cyan-dark)",fontFamily:"DM Mono,monospace"}}>
+              {Number(vals.current.unique_clients)>0?calc.rbr.toFixed(1)+"%":"—"}
+            </div>
+            <div style={{fontSize:10,color:"var(--text3)",marginTop:4}}>
+              {vals.current.rebookings||0} rebookings from {vals.current.unique_clients||0} unique clients
             </div>
           </div>
 
@@ -444,46 +473,47 @@ function App(){
             <span style={{fontSize:11,color:"var(--text3)"}}>Saves to Google Sheets · shared across all branches</span>
           </div>
 
-          {/* Daily RAG Status */}
+          {/* Today's Performance */}
           {(()=>{
-            const dailyRevTarget=getDailyTarget(branch,year,month,"revenue_total");
-            const dailyConductTarget=getDailyTarget(branch,year,month,"total_conductions");
-            if(dailyRevTarget===0&&dailyConductTarget===0) return null;
-            const reBookRateTarget=getTargetVal(branch,year,month,"rebook_rate");
-            const metrics=[
-              {label:"Revenue",actual:Number(formRef.current.revenue_total)||0,target:dailyRevTarget,type:"currency"},
-              {label:"Conductions",actual:totalConductions,target:dailyConductTarget,type:"number"},
-              {label:"Credit Conductions",actual:creditConductions,target:getDailyTarget(branch,year,month,"credit_conductions"),type:"number"},
-              {label:"Unique Clients",actual:Number(formRef.current.unique_clients)||0,target:getDailyTarget(branch,year,month,"unique_clients"),type:"number"},
-              {label:"Phone Calls",actual:Number(formRef.current.phone_calls)||0,target:getDailyTarget(branch,year,month,"phone_calls"),type:"number"},
-              {label:"First Visits",actual:Number(formRef.current.first_visit)||0,target:getDailyTarget(branch,year,month,"first_visit"),type:"number"},
-              {label:"Rebooking Rate",actual:reBookRate,target:reBookRateTarget,type:"percent",noDaily:true},
+            const dRevTgt  = getDTgt(branch,year,month,"revenue_total");
+            const dCondTgt = getDTgt(branch,year,month,"total_conductions");
+            if (dRevTgt===0&&dCondTgt===0) return null;
+            const rbTgt = getTgtVal(branch,year,month,"rebook_rate");
+            const metrics = [
+              {label:"Revenue",           actual:Number(vals.current.revenue_total)||0, target:dRevTgt,                              type:"currency"},
+              {label:"Conductions",       actual:calc.tc,                               target:dCondTgt,                             type:"number"},
+              {label:"Credit Conductions",actual:calc.cc,                               target:getDTgt(branch,year,month,"credit_conductions"), type:"number"},
+              {label:"Unique Clients",    actual:Number(vals.current.unique_clients)||0,target:getDTgt(branch,year,month,"unique_clients"),      type:"number"},
+              {label:"First Visits",      actual:Number(vals.current.first_visit)||0,   target:getDTgt(branch,year,month,"first_visit"),         type:"number"},
+              {label:"Phone Calls",       actual:Number(vals.current.phone_calls)||0,   target:getDTgt(branch,year,month,"phone_calls"),         type:"number"},
+              {label:"Rebooking Rate",    actual:calc.rbr,                              target:rbTgt,                                type:"percent"},
             ].filter(m=>m.target>0);
-            const rc={green:"var(--green)",amber:"var(--amber)",red:"var(--red)"};
-            const rb={green:"var(--green-pale)",amber:"var(--amber-pale)",red:"var(--red-pale)"};
-            const rl={green:"On Track",amber:"Close",red:"Behind"};
-            const re={green:"🟢",amber:"🟡",red:"🔴"};
-            return(
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:14,padding:"18px 20px",boxShadow:"var(--shadow)"}}>
-                <div style={{fontSize:12,fontWeight:700,color:"var(--navy)",marginBottom:14,letterSpacing:"0.04em"}}>
+            if (metrics.length===0) return null;
+            const RB = {green:"var(--green-pale)",amber:"var(--amber-pale)",red:"var(--red-pale)"};
+            const RC = {green:"var(--green)",amber:"var(--amber)",red:"var(--red)"};
+            const RL = {green:"On Track",amber:"Close",red:"Behind"};
+            const RE = {green:"🟢",amber:"🟡",red:"🔴"};
+            return (
+              <div className="card">
+                <div style={{fontSize:12,fontWeight:700,color:"var(--navy)",marginBottom:14,letterSpacing:".04em"}}>
                   TODAY'S PERFORMANCE — {branch} · {MONTHS[month]} {day}
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:10}}>
                   {metrics.map(m=>{
-                    const rag=getRag(m.actual,m.noDaily?m.target:m.target);
-                    const pct=m.target>0?((m.actual/m.target)*100):0;
-                    return(
-                      <div key={m.label} style={{background:rb[rag],border:"1.5px solid "+rc[rag]+"33",borderRadius:10,padding:"12px 14px",borderLeft:"4px solid "+rc[rag]}}>
-                        <div style={{fontSize:9,fontWeight:700,color:rc[rag],letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>{m.label}</div>
-                        <div style={{fontSize:20,fontWeight:700,color:"var(--text)",fontFamily:"'DM Mono',monospace"}}>{fmt(m.actual,m.type)}</div>
+                    const r = ragStatus(m.actual, m.target);
+                    const pct = m.target>0?(m.actual/m.target)*100:0;
+                    return (
+                      <div key={m.label} style={{background:RB[r],border:"1.5px solid "+RC[r]+"33",borderRadius:10,padding:"12px 14px",borderLeft:"4px solid "+RC[r]}}>
+                        <div style={{fontSize:9,fontWeight:700,color:RC[r],letterSpacing:".12em",textTransform:"uppercase",marginBottom:6}}>{m.label}</div>
+                        <div style={{fontSize:20,fontWeight:700,color:"var(--text)",fontFamily:"DM Mono,monospace"}}>{fmt(m.actual,m.type)}</div>
                         <div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Target: {fmt(m.target,m.type)}</div>
                         <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8}}>
-                          <span style={{fontSize:13}}>{re[rag]}</span>
-                          <span style={{fontSize:11,fontWeight:700,color:rc[rag]}}>{rl[rag]}</span>
+                          <span style={{fontSize:13}}>{RE[r]}</span>
+                          <span style={{fontSize:11,fontWeight:700,color:RC[r]}}>{RL[r]}</span>
                           <span style={{fontSize:10,color:"var(--text3)",marginLeft:"auto"}}>{pct.toFixed(0)}%</span>
                         </div>
-                        <div style={{height:3,background:"rgba(0,0,0,0.08)",borderRadius:3,marginTop:6,overflow:"hidden"}}>
-                          <div style={{height:3,width:Math.min(pct,100)+"%",background:rc[rag],borderRadius:3}}/>
+                        <div style={{height:3,background:"rgba(0,0,0,.08)",borderRadius:3,marginTop:6,overflow:"hidden"}}>
+                          <div style={{height:3,width:Math.min(pct,100)+"%",background:RC[r],borderRadius:3}}/>
                         </div>
                       </div>
                     );
@@ -495,59 +525,62 @@ function App(){
         </div>
       )}
 
-      {/* ══ TARGETS ══ */}
+      {/* ═══ TARGETS ═══ */}
       {view==="targets"&&(
         <div style={{maxWidth:900,margin:"0 auto",padding:"32px 24px"}}>
-          <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:20,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
-            <div><div className="lbl">Month</div>
+          <div className="ctrl-bar">
+            <div>
+              <div className="lbl">Month</div>
               <select value={month} onChange={e=>setMonth(Number(e.target.value))}>
                 {MONTHS.map((m,i)=><option key={i} value={i}>{m}</option>)}
               </select>
             </div>
-            <div><div className="lbl">Year</div>
+            <div>
+              <div className="lbl">Year</div>
               <select value={year} onChange={e=>setYear(Number(e.target.value))}>
                 {[2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
               </select>
             </div>
-            <div style={{marginLeft:"auto",fontSize:11,color:"var(--text3)"}}>{daysInMonth} days · targets auto-divide into daily</div>
+            <div style={{marginLeft:"auto",fontSize:11,color:"var(--text3)"}}>{dim} days · targets auto-divide into daily</div>
           </div>
-
           <div style={{display:"flex",gap:10,marginBottom:24,flexWrap:"wrap",alignItems:"center"}}>
             <span style={{fontSize:11,color:"var(--text3)",fontWeight:600}}>RAG Scale:</span>
-            <span className="rag rag-green">🟢 On Track — at or above</span>
-            <span className="rag rag-amber">🟡 Close — within 15% below</span>
-            <span className="rag rag-red">🔴 Behind — more than 15% below</span>
+            <span className="rag rag-green">🟢 On Track</span>
+            <span className="rag rag-amber">🟡 Within 15%</span>
+            <span className="rag rag-red">🔴 Behind &gt;15%</span>
           </div>
-
           {BRANCHES.map(b=>{
-            const tRow=getTargetRow(b,year,month)||{};
-            const inputs=targetInputs[b]||{};
-            return(
+            const tRow = getTgtRow(b,year,month)||{};
+            return (
               <div key={b} className="card" style={{marginBottom:16}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{background:"var(--navy)",color:"#fff",borderRadius:8,padding:"4px 14px",fontWeight:800,fontSize:15}}>{b}</div>
-                    <span style={{fontSize:13,color:"var(--text3)"}}>{BRANCH_NAMES[b]}</span>
+                    <span style={{fontSize:13,color:"var(--text3)"}}>{BNAMES[b]}</span>
                   </div>
-                  <button className="set-btn" onClick={()=>handleTargetSave(b)}>Save {b} Targets</button>
+                  <button className="set-btn" onClick={()=>handleTgtSave(b)}>Save {b} Targets</button>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                   {TARGET_METRICS.map(m=>{
-                    const current=Number(tRow[m.key])||0;
-                    const daily=current>0?current/daysInMonth:0;
-                    return(
+                    const current = Number(tRow[m.key])||0;
+                    const daily = current>0?current/dim:0;
+                    return (
                       <div key={m.key} className="tgt-row">
                         <div className="tgt-label">{m.label}</div>
                         <input type="number" placeholder="Monthly target" className="tgt-inp"
                           key={b+"_"+m.key+"_"+month+"_"+year}
                           defaultValue={current>0?current:""}
-                          onChange={e=>setTargetInputs(prev=>({...prev,[b]:{...(prev[b]||{}),[m.key]:e.target.value}}))}
+                          onChange={e=>setTgtInputs(prev=>({...prev,[b]:{...(prev[b]||{}),[m.key]:e.target.value}}))}
                         />
                         <div className="tgt-current">
-                          {current>0?<div>
-                            <div>{fmt(current,m.type)}/mo</div>
-                            <div style={{fontSize:10,color:"var(--text3)"}}>{fmt(daily,m.type==="currency"?"currency":"decimal")}/day</div>
-                          </div>:<span style={{color:"var(--text3)"}}>not set</span>}
+                          {current>0?(
+                            <div>
+                              <div>{fmt(current,m.type)}/mo</div>
+                              <div style={{fontSize:10,color:"var(--text3)"}}>{fmt(daily,m.type==="currency"?"currency":"decimal")}/day</div>
+                            </div>
+                          ):(
+                            <span style={{color:"var(--text3)"}}>not set</span>
+                          )}
                         </div>
                       </div>
                     );
@@ -559,29 +592,32 @@ function App(){
         </div>
       )}
 
-      {/* ══ DASHBOARD ══ */}
+      {/* ═══ DASHBOARD ═══ */}
       {view==="dashboard"&&(
         <div style={{padding:"32px 24px"}}>
-          <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:20,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
-            <div><div className="lbl">View</div>
+          <div className="ctrl-bar">
+            <div>
+              <div className="lbl">View</div>
               <div style={{display:"flex",gap:6}}>
-                <button className={`br-btn ${dashBranch==="ALL"?"active":""}`} onClick={()=>setDashBranch("ALL")}>All Branches</button>
-                {BRANCHES.map(b=><button key={b} className={`br-btn ${dashBranch===b?"active":""}`} onClick={()=>setDashBranch(b)}>{b}</button>)}
+                <button className={"br-btn"+(dashBranch==="ALL"?" active":"")} onClick={()=>setDashBranch("ALL")}>All Branches</button>
+                {BRANCHES.map(b=><button key={b} className={"br-btn"+(dashBranch===b?" active":"")} onClick={()=>setDashBranch(b)}>{b}</button>)}
               </div>
             </div>
-            <div><div className="lbl">Month</div>
+            <div>
+              <div className="lbl">Month</div>
               <select value={month} onChange={e=>setMonth(Number(e.target.value))}>
                 {MONTHS.map((m,i)=><option key={i} value={i}>{m}</option>)}
               </select>
             </div>
-            <div><div className="lbl">Year</div>
+            <div>
+              <div className="lbl">Year</div>
               <select value={year} onChange={e=>setYear(Number(e.target.value))}>
                 {[2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
               </select>
             </div>
             <div style={{marginLeft:"auto",textAlign:"right"}}>
               <div style={{fontSize:13,fontWeight:700,color:"var(--navy)"}}>{MONTHS[month]} {year}</div>
-              <div style={{fontSize:11,color:"var(--text3)"}}>Day {elapsed} of {daysInMonth}</div>
+              <div style={{fontSize:11,color:"var(--text3)"}}>Day {elapsed} of {dim}</div>
             </div>
           </div>
 
@@ -594,46 +630,45 @@ function App(){
 
           <div className="section-header"><span className="section-dot"/>Revenue MTD</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:28}}>
-            <KpiCard label="Total Revenue" field="revenue_total" type="currency" highlight/>
+            <KpiCard label="Total Revenue"           field="revenue_total"  type="currency" highlight/>
             <KpiCard label="New Client → Membership" field="rev_new_member" type="currency" showRag={false}/>
-            <KpiCard label="New Client → Single" field="rev_new_single" type="currency" showRag={false}/>
-            <KpiCard label="Member Renewals" field="rev_renewal" type="currency" showRag={false}/>
+            <KpiCard label="New Client → Single"     field="rev_new_single" type="currency" showRag={false}/>
+            <KpiCard label="Member Renewals"         field="rev_renewal"    type="currency" showRag={false}/>
           </div>
 
           <div className="section-header"><span className="section-dot"/>Conductions MTD</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:28}}>
-            <KpiCard label="Total Conductions" field="total_conductions"/>
+            <KpiCard label="Total Conductions"  field="total_conductions"/>
             <KpiCard label="Credit Conductions" field="credit_conductions"/>
-            <KpiCard label="Unique Clients" field="unique_clients"/>
+            <KpiCard label="Unique Clients"     field="unique_clients"/>
             <div className="card">
               <div className="lbl">Avg Credits / Client</div>
-              <div className="big-num">{fmt(aggregated("avg_credit_client"),"decimal")}</div>
+              <div className="big-num">{fmt(agg("avg_credit_client"),"decimal")}</div>
             </div>
           </div>
 
           <div className="section-header"><span className="section-dot"/>Acquisition & Activity MTD</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:28}}>
-            <KpiCard label="First Visit Clients" field="first_visit"/>
-            <KpiCard label="Phone Calls Made" field="phone_calls"/>
+            <KpiCard label="First Visit Clients"        field="first_visit"/>
+            <KpiCard label="Phone Calls Made"           field="phone_calls"/>
             <KpiCard label="BD & Partnership 1st Visit" field="bd_first_visit" showRag={false}/>
             {(()=>{
-              const totalRebooks=aggregated("rebookings");
-              const totalUnique=aggregated("unique_clients");
-              const rate=totalUnique>0?(totalRebooks/totalUnique*100):null;
-              const reBookTgt=dashBranches.reduce((s,b)=>s+getTargetVal(b,year,month,"rebook_rate"),0)/dashBranches.length;
-              const reBookRag=rate!==null&&reBookTgt>0?getRag(rate,reBookTgt):"none";
-              const rc2={green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--border2)"};
-              return(
-                <div className="card-hl" style={{borderLeft:"4px solid "+(reBookRag!=="none"?rc2[reBookRag]:"var(--border)")}}>
+              const totalRebooks = agg("rebookings");
+              const totalUnique  = agg("unique_clients");
+              const rate = totalUnique>0?(totalRebooks/totalUnique*100):null;
+              const tgt  = dashBranches.reduce((s,b)=>s+getTgtVal(b,year,month,"rebook_rate"),0)/dashBranches.length;
+              const r    = rate!==null&&tgt>0?ragStatus(rate,tgt):"none";
+              return (
+                <div className="card-hl" style={{borderLeft:"4px solid "+(r!=="none"?RAGC[r]:"var(--border)")}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
                     <div className="lbl" style={{marginBottom:0}}>Rebooking Rate MTD</div>
-                    {reBookRag!=="none"&&<span className={"rag rag-"+reBookRag}>{reBookRag==="green"?"🟢":reBookRag==="amber"?"🟡":"🔴"}</span>}
+                    {r!=="none"&&<span className={"rag rag-"+r}>{r==="green"?"🟢":r==="amber"?"🟡":"🔴"}</span>}
                   </div>
                   <div className="big-num" style={{color:rate!==null?(rate>=70?"var(--green)":rate>=55?"var(--amber)":"var(--red)"):"var(--text3)"}}>
                     {rate!==null?rate.toFixed(1)+"%":"—"}
                   </div>
                   <div className="sub-txt">{totalRebooks} rebookings · {totalUnique} unique clients</div>
-                  {reBookTgt>0&&<div className="sub-txt">Target: {reBookTgt.toFixed(0)}%</div>}
+                  {tgt>0&&<div className="sub-txt">Target: {tgt.toFixed(0)}%</div>}
                 </div>
               );
             })()}
@@ -642,11 +677,11 @@ function App(){
           <div className="section-header"><span className="section-dot"/>Treatment Breakdown MTD</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:8,marginBottom:28}}>
             {TREATMENTS.map(t=>{
-              const mtd=aggregated(t.key),proj=projectedAll(t.key);
-              return(
+              const mtd=agg(t.key), proj=projAll(t.key);
+              return (
                 <div key={t.key} className="card" style={{padding:"12px 14px"}}>
                   <div className="lbl" style={{fontSize:9}}>{t.label}</div>
-                  <div style={{fontSize:22,fontWeight:700,color:"var(--navy)",fontFamily:"'DM Mono',monospace"}}>{mtd}</div>
+                  <div style={{fontSize:22,fontWeight:700,color:"var(--navy)",fontFamily:"DM Mono,monospace"}}>{mtd}</div>
                   <div className="sub-txt">Proj: {Math.round(proj)} · <span style={{color:"var(--cyan)"}}>{t.credits}cr</span></div>
                 </div>
               );
@@ -654,169 +689,177 @@ function App(){
           </div>
 
           {dashBranch==="ALL"&&(
-            <>
+            <div>
               <div className="section-header"><span className="section-dot"/>Branch Comparison</div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
                 {BRANCHES.map(b=>{
-                  const rows=getMonthRows(b,year,month);
-                  const rev=sumField(rows,"revenue_total",elapsed);
-                  const proj=projectEOM(rows,"revenue_total",daysInMonth,elapsed);
-                  const dailyTgt=getDailyTarget(b,year,month,"revenue_total");
-                  const expectedMTD=dailyTgt*elapsed;
-                  const rag=getRag(rev,expectedMTD);
-                  const rc=ragColor[rag];
-                  const pct=expectedMTD>0?Math.min((rev/expectedMTD)*100,999):null;
-                  const conductions=sumField(rows,"total_conductions",elapsed);
-                  const fv=sumField(rows,"first_visit",elapsed);
-                  const reBook=sumField(rows,"rebookings",elapsed);
-                  const calls=sumField(rows,"phone_calls",elapsed);
-                  return(
-                    <div key={b} className="card" style={{borderTop:`3px solid ${rag!=="none"?rc:"var(--border)"}`}}>
+                  const rows    = getMonthRows(b,year,month);
+                  const rev     = sumF(rows,"revenue_total",elapsed);
+                  const proj    = projEOM(rows,"revenue_total",dim,elapsed);
+                  const dTgt    = getDTgt(b,year,month,"revenue_total");
+                  const exp     = dTgt*elapsed;
+                  const r       = ragStatus(rev,exp);
+                  const pct     = exp>0?Math.min((rev/exp)*100,999):null;
+                  const conducts = sumF(rows,"total_conductions",elapsed);
+                  const fv      = sumF(rows,"first_visit",elapsed);
+                  const rebooks = sumF(rows,"rebookings",elapsed);
+                  const unique  = sumF(rows,"unique_clients",elapsed);
+                  const calls   = sumF(rows,"phone_calls",elapsed);
+                  const rbRate  = unique>0?(rebooks/unique*100).toFixed(0)+"%":"—";
+                  return (
+                    <div key={b} className="card" style={{borderTop:"3px solid "+(r!=="none"?RAGC[r]:"var(--border)")}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                         <div style={{background:"var(--navy)",color:"#fff",borderRadius:8,padding:"4px 12px",fontWeight:800,fontSize:14}}>{b}</div>
-                        {rag!=="none"&&<span className={`rag rag-${rag}`}>{rag==="green"?"🟢":rag==="amber"?"🟡":"🔴"}{pct!==null?" "+pct.toFixed(0)+"%":""}</span>}
+                        {r!=="none"&&<span className={"rag rag-"+r}>{r==="green"?"🟢":r==="amber"?"🟡":"🔴"}{pct!==null?" "+pct.toFixed(0)+"%":""}</span>}
                       </div>
-                      <div style={{fontSize:20,fontWeight:700,fontFamily:"'DM Mono',monospace",marginBottom:4}}>{fmt(rev,"currency")}</div>
+                      <div style={{fontSize:20,fontWeight:700,fontFamily:"DM Mono,monospace",marginBottom:4}}>{fmt(rev,"currency")}</div>
                       <div className="sub-txt">Proj EOM: {fmt(proj,"currency")}</div>
-                      {dailyTgt>0&&<div className="sub-txt">Target: {fmt(dailyTgt*daysInMonth,"currency")}/mo</div>}
-                      <div className="prog-track"><div className="prog-fill" style={{width:Math.min(pct||0,100)+"%",background:rag!=="none"?rc:"var(--cyan)"}}/></div>
-                      {(()=>{
-                        const reBookRate2=sumField(rows,"unique_clients",elapsed)>0?(reBook/sumField(rows,"unique_clients",elapsed)*100).toFixed(0)+"%":"—";
-                        return(
-                          <div style={{marginTop:12,display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                            {[["Conductions",conductions],["1st Visits",fv],["Rebook%",reBookRate2],["Calls",calls]].map(([l,v])=>(
-                              <div key={l} className="stat-mini"><div className="val">{v}</div><div className="key">{l}</div></div>
-                            ))}
+                      {dTgt>0&&<div className="sub-txt">Target: {fmt(dTgt*dim,"currency")}/mo</div>}
+                      <div className="prog-track"><div className="prog-fill" style={{width:Math.min(pct||0,100)+"%",background:RAGC[r]}}/></div>
+                      <div style={{marginTop:12,display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                        {[["Conductions",conducts],["1st Visits",fv],["Rebook%",rbRate],["Calls",calls]].map(([l,v])=>(
+                          <div key={l} className="stat-mini">
+                            <div className="val">{v}</div>
+                            <div className="key">{l}</div>
                           </div>
-                        );
-                      })()}
+                        ))}
+                      </div>
                     </div>
                   );
                 })}
               </div>
-            </>
+            </div>
           )}
         </div>
       )}
 
-      {/* ══ MONTHLY LOG ══ */}
+      {/* ═══ MONTHLY LOG ═══ */}
       {view==="monthly"&&(
         <div style={{padding:"32px 24px"}}>
-          <div style={{display:"flex",gap:14,alignItems:"flex-end",marginBottom:24,flexWrap:"wrap",background:"var(--surface)",padding:"16px 20px",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)"}}>
-            <div><div className="lbl">Branch</div>
-              <div style={{display:"flex",gap:6}}>{BRANCHES.map(b=><button key={b} className={`br-btn ${branch===b?"active":""}`} onClick={()=>setBranch(b)}>{b}</button>)}</div>
+          <div className="ctrl-bar">
+            <div>
+              <div className="lbl">Branch</div>
+              <div style={{display:"flex",gap:6}}>
+                {BRANCHES.map(b=><button key={b} className={"br-btn"+(branch===b?" active":"")} onClick={()=>setBranch(b)}>{b}</button>)}
+              </div>
             </div>
-            <div><div className="lbl">Month</div>
+            <div>
+              <div className="lbl">Month</div>
               <select value={month} onChange={e=>setMonth(Number(e.target.value))}>
                 {MONTHS.map((m,i)=><option key={i} value={i}>{m}</option>)}
               </select>
             </div>
-            <div><div className="lbl">Year</div>
+            <div>
+              <div className="lbl">Year</div>
               <select value={year} onChange={e=>setYear(Number(e.target.value))}>
                 {[2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
               </select>
             </div>
           </div>
           {(()=>{
-            const rows=getMonthRows(branch,year,month);
-            const monthlyRevTgt=getTargetVal(branch,year,month,"revenue_total");
-            const mtdRev=sumField(rows,"revenue_total",elapsed);
-            const projRev=projectEOM(rows,"revenue_total",daysInMonth,elapsed);
-            const monthPct=monthlyRevTgt>0?Math.min((mtdRev/monthlyRevTgt)*100,100):null;
-            const monthRag=monthlyRevTgt>0?getRag(mtdRev,getDailyTarget(branch,year,month,"revenue_total")*elapsed):"none";
-            const rc={green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--cyan)"};
-            const cols=[
-              {key:"revenue_total",     label:"Total Rev",    type:"currency"},
-              {key:"rev_new_member",    label:"New→Member",   type:"currency"},
-              {key:"rev_new_single",    label:"New→Single",   type:"currency"},
-              {key:"rev_renewal",       label:"Renewal",      type:"currency"},
-              {key:"total_conductions", label:"Conduct.",     type:"number"},
-              {key:"credit_conductions",label:"Cr.Conduct.",  type:"number"},
-              {key:"unique_clients",    label:"Unique",       type:"number"},
-              {key:"avg_credit_client", label:"Avg Cr/Cl",   type:"decimal"},
-              {key:"first_visit",       label:"1st Visit",   type:"number"},
+            const rows    = getMonthRows(branch,year,month);
+            const mRevTgt = getTgtVal(branch,year,month,"revenue_total");
+            const mtdRev  = sumF(rows,"revenue_total",elapsed);
+            const projRev = projEOM(rows,"revenue_total",dim,elapsed);
+            const mPct    = mRevTgt>0?Math.min((mtdRev/mRevTgt)*100,100):null;
+            const dRevTgt = getDTgt(branch,year,month,"revenue_total");
+            const mRag    = mRevTgt>0?ragStatus(mtdRev,dRevTgt*elapsed):"none";
+            const RC2     = {green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--cyan)"};
+            const cols = [
+              {key:"revenue_total",     label:"Total Rev",   type:"currency"},
+              {key:"rev_new_member",    label:"New→Member",  type:"currency"},
+              {key:"rev_new_single",    label:"New→Single",  type:"currency"},
+              {key:"rev_renewal",       label:"Renewal",     type:"currency"},
+              {key:"total_conductions", label:"Conduct.",    type:"number"},
+              {key:"credit_conductions",label:"Cr.Conduct.", type:"number"},
+              {key:"unique_clients",    label:"Unique",      type:"number"},
+              {key:"avg_credit_client", label:"Avg Cr/Cl",  type:"decimal"},
+              {key:"first_visit",       label:"1st Visit",  type:"number"},
               {key:"rebookings",        label:"Rebook.",     type:"number"},
-              {key:"rebook_rate",       label:"Rebook %",    type:"percent"},
-              {key:"phone_calls",       label:"Calls",       type:"number"},
-              {key:"bd_first_visit",    label:"BD 1st",      type:"number"},
+              {key:"rebook_rate",       label:"Rebook%",    type:"percent"},
+              {key:"phone_calls",       label:"Calls",      type:"number"},
+              {key:"bd_first_visit",    label:"BD 1st",     type:"number"},
             ];
-            const thS={padding:"10px 14px",textAlign:"right",color:"var(--text3)",fontSize:10,fontWeight:600,letterSpacing:"0.08em",borderBottom:"2px solid var(--border)",whiteSpace:"nowrap",background:"var(--surface)"};
-            const rc2={green:"var(--green)",amber:"var(--amber)",red:"var(--red)",none:"var(--cyan)"};
-            return(
+            const thS = {padding:"10px 14px",textAlign:"right",color:"var(--text3)",fontSize:10,fontWeight:600,letterSpacing:".08em",borderBottom:"2px solid var(--border)",whiteSpace:"nowrap",background:"var(--surface)"};
+            return (
               <div>
-              {monthlyRevTgt>0&&(
-                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"16px 20px",marginBottom:16,boxShadow:"var(--shadow)"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"var(--navy)"}}>Monthly Revenue Progress — {branch}</div>
-                    {monthRag!=="none"&&<span className={"rag rag-"+monthRag}>{monthRag==="green"?"🟢":monthRag==="amber"?"🟡":"🔴"} {monthPct!==null?monthPct.toFixed(0)+"%":""}</span>}
+                {mRevTgt>0&&(
+                  <div className="card" style={{marginBottom:16}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                      <div style={{fontSize:12,fontWeight:700,color:"var(--navy)"}}>Monthly Revenue Progress — {branch}</div>
+                      {mRag!=="none"&&<span className={"rag rag-"+mRag}>{mRag==="green"?"🟢":mRag==="amber"?"🟡":"🔴"} {mPct!==null?mPct.toFixed(0)+"%":""}</span>}
+                    </div>
+                    <div style={{display:"flex",gap:24,marginBottom:12,flexWrap:"wrap"}}>
+                      <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>MTD Actual</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace"}}>{fmt(mtdRev,"currency")}</div></div>
+                      <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Monthly Target</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:"var(--text2)"}}>{fmt(mRevTgt,"currency")}</div></div>
+                      <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Proj EOM</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:RC2[mRag]}}>{fmt(projRev,"currency")}</div></div>
+                      <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Daily Target</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:"var(--text2)"}}>{fmt(dRevTgt,"currency")}</div></div>
+                    </div>
+                    <div style={{height:8,background:"var(--border)",borderRadius:6,overflow:"hidden"}}>
+                      <div style={{height:8,width:(mPct||0)+"%",background:RC2[mRag],borderRadius:6,transition:"width .5s"}}/>
+                    </div>
+                    <div style={{fontSize:10,color:"var(--text3)",marginTop:6}}>Day {elapsed} of {dim} · {(mPct||0).toFixed(0)}% of monthly target reached</div>
                   </div>
-                  <div style={{display:"flex",gap:24,marginBottom:12,flexWrap:"wrap"}}>
-                    <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>MTD Actual</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace"}}>{fmt(mtdRev,"currency")}</div></div>
-                    <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Monthly Target</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:"var(--text2)"}}>{fmt(monthlyRevTgt,"currency")}</div></div>
-                    <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Proj EOM</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:rc2[monthRag]}}>{fmt(projRev,"currency")}</div></div>
-                    <div><div style={{fontSize:10,color:"var(--text3)",marginBottom:2}}>Daily Target</div><div style={{fontSize:16,fontWeight:700,fontFamily:"DM Mono,monospace",color:"var(--text2)"}}>{fmt(getDailyTarget(branch,year,month,"revenue_total"),"currency")}</div></div>
+                )}
+                <div style={{background:"var(--surface)",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)",overflow:"hidden"}}>
+                  <div style={{overflowX:"auto"}}>
+                    <table style={{borderCollapse:"collapse",width:"100%",fontSize:13}}>
+                      <thead>
+                        <tr>
+                          <th style={{...thS,textAlign:"left",position:"sticky",left:0,zIndex:10,borderRight:"1px solid var(--border)"}}>Day</th>
+                          <th style={{...thS,textAlign:"center"}}>RAG</th>
+                          {cols.map(c=><th key={c.key} style={thS}>{c.label}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from({length:dim},(_,i)=>i+1).map(d=>{
+                          const row = rows.find(r=>Number(r.day)===d);
+                          const isToday  = d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+                          const isFuture = d>today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+                          const dayRev   = row?Number(row.revenue_total)||0:0;
+                          const dayRag   = (!isFuture&&row&&dRevTgt>0)?ragStatus(dayRev,dRevTgt):"none";
+                          const EMOJI    = {green:"🟢",amber:"🟡",red:"🔴",none:""};
+                          const RBORDER  = {green:"#00c89633",amber:"#f59e0b33",red:"#e53e3e33",none:"transparent"};
+                          const bg       = isToday?"var(--cyan-pale)":row?"var(--surface)":"var(--bg)";
+                          const tdS      = {padding:"9px 14px",textAlign:"right",fontSize:13,color:row?"var(--text2)":"var(--text3)",background:bg,borderBottom:"1px solid var(--border)"};
+                          return (
+                            <tr key={d} className="tbl-row"
+                              style={{borderLeft:"3px solid "+(dayRag!=="none"?RBORDER[dayRag]:"transparent")}}
+                              onClick={()=>{ setDay(d); setView("input"); }}>
+                              <td style={{...tdS,textAlign:"left",position:"sticky",left:0,fontWeight:isToday?700:500,color:isToday?"var(--cyan-dark)":"var(--text2)",borderRight:"1px solid var(--border)"}}>
+                                {d}{isToday?" ●":""}
+                              </td>
+                              <td style={{...tdS,textAlign:"center",fontSize:16}}>{EMOJI[dayRag]||(!isFuture&&!row?"·":"")}</td>
+                              {cols.map(c=><td key={c.key} style={tdS}>{row?fmt(row[c.key],c.type):"·"}</td>)}
+                            </tr>
+                          );
+                        })}
+                        <tr style={{background:"var(--navy)"}}>
+                          <td style={{padding:"12px 14px",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:".1em",position:"sticky",left:0,background:"var(--navy)",borderRight:"1px solid rgba(255,255,255,.1)"}}>MTD</td>
+                          <td style={{background:"var(--navy)"}}></td>
+                          {cols.map(c=><td key={c.key} style={{padding:"12px 14px",textAlign:"right",color:"#fff",fontWeight:700,fontSize:13}}>{fmt(sumF(rows,c.key,elapsed),c.type)}</td>)}
+                        </tr>
+                        <tr style={{background:"var(--cyan-pale)"}}>
+                          <td style={{padding:"12px 14px",color:"var(--cyan-dark)",fontSize:11,fontWeight:700,letterSpacing:".1em",position:"sticky",left:0,background:"var(--cyan-pale)",borderRight:"1px solid var(--border)"}}>PROJ EOM</td>
+                          <td style={{background:"var(--cyan-pale)"}}></td>
+                          {cols.map(c=><td key={c.key} style={{padding:"12px 14px",textAlign:"right",color:"var(--cyan-dark)",fontWeight:600,fontSize:13}}>{fmt(projEOM(rows,c.key,dim,elapsed),c.type)}</td>)}
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <div style={{height:8,background:"var(--border)",borderRadius:6,overflow:"hidden"}}>
-                    <div style={{height:8,width:(monthPct||0)+"%",background:rc2[monthRag],borderRadius:6,transition:"width 0.5s"}}/>
-                  </div>
-                  <div style={{fontSize:10,color:"var(--text3)",marginTop:6}}>Day {elapsed} of {daysInMonth} · {(monthPct||0).toFixed(0)}% of monthly target reached</div>
+                  <div style={{padding:"10px 16px",fontSize:11,color:"var(--text3)",borderTop:"1px solid var(--border)"}}>Click any row to edit · MTD = month to date through today</div>
                 </div>
-              )}
-              <div style={{background:"var(--surface)",borderRadius:14,border:"1px solid var(--border)",boxShadow:"var(--shadow)",overflow:"hidden"}}>
-                <div style={{overflowX:"auto"}}>
-                  <table style={{borderCollapse:"collapse",width:"100%",fontSize:13}}>
-                    <thead>
-                      <tr>
-                        <th style={{...thS,textAlign:"left",position:"sticky",left:0,zIndex:10,borderRight:"1px solid var(--border)"}}>Day</th>
-                        <th style={{...thS,textAlign:"center"}}>RAG</th>
-                        {cols.map(c=><th key={c.key} style={thS}>{c.label}</th>)}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>{
-                        const row=rows.find(r=>Number(r.day)===d);
-                        const isToday=d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
-                        const isFuture=d>today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
-                        const dailyRevTgt=getDailyTarget(branch,year,month,"revenue_total");
-                        const dayRev=row?Number(row["revenue_total"])||0:0;
-                        const dayRag=(!isFuture&&row&&dailyRevTgt>0)?getRag(dayRev,dailyRevTgt):"none";
-                        const ragEmoji={green:"🟢",amber:"🟡",red:"🔴",none:""};
-                        const ragBorder={green:"#00c89633",amber:"#f59e0b33",red:"#e53e3e33",none:"transparent"};
-                        const bg=isToday?"var(--cyan-pale)":row?"var(--surface)":"var(--bg)";
-                        const tdS={padding:"9px 14px",textAlign:"right",fontSize:13,color:row?"var(--text2)":"var(--text3)",background:bg,borderBottom:"1px solid var(--border)"};
-                        return(
-                          <tr key={d} className="tbl-row" style={{borderLeft:dayRag!="none"?"3px solid "+ragBorder[dayRag]:"3px solid transparent"}} onClick={()=>{setDay(d);setView("input");}}>
-                            <td style={{...tdS,textAlign:"left",position:"sticky",left:0,fontWeight:isToday?700:500,color:isToday?"var(--cyan-dark)":"var(--text2)",borderRight:"1px solid var(--border)"}}>
-                              {d}{isToday?" ●":""}
-                            </td>
-                            <td style={{...tdS,textAlign:"center",fontSize:16}}>{ragEmoji[dayRag]||(!isFuture&&!row?"·":"")}</td>
-                            {cols.map(c=>(<td key={c.key} style={tdS}>{row?fmt(row[c.key],c.type):"·"}</td>))}
-                          </tr>
-                        );
-                      })}
-                      <tr style={{background:"var(--navy)"}}>
-                        <td style={{padding:"12px 14px",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:"0.1em",position:"sticky",left:0,background:"var(--navy)",borderRight:"1px solid rgba(255,255,255,0.1)"}}>MTD</td>
-                        {cols.map(c=><td key={c.key} style={{padding:"12px 14px",textAlign:"right",color:"#fff",fontWeight:700,fontSize:13}}>{fmt(sumField(rows,c.key,elapsed),c.type)}</td>)}
-                      </tr>
-                      <tr style={{background:"var(--cyan-pale)"}}>
-                        <td style={{padding:"12px 14px",color:"var(--cyan-dark)",fontSize:11,fontWeight:700,letterSpacing:"0.1em",position:"sticky",left:0,background:"var(--cyan-pale)",borderRight:"1px solid var(--border)"}}>PROJ EOM</td>
-                        {cols.map(c=><td key={c.key} style={{padding:"12px 14px",textAlign:"right",color:"var(--cyan-dark)",fontWeight:600,fontSize:13}}>{fmt(projectEOM(rows,c.key,daysInMonth,elapsed),c.type)}</td>)}
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div style={{padding:"10px 16px",fontSize:11,color:"var(--text3)",borderTop:"1px solid var(--border)"}}>Click any row to edit · MTD = month to date through today</div>
-              </div>
               </div>
             );
           })()}
         </div>
       )}
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+
     </div>
   );
 }
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
